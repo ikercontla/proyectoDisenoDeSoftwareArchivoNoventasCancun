@@ -92,7 +92,6 @@ Cada responsabilidad se vincula con los requerimientos funcionales o las reglas 
 
 
 ---
-
 ## 4.3 Atributos y Métodos
 
 | Clase | Atributos (Nombre : Tipo) | Métodos (Firma de operación) | Justificación |
@@ -103,7 +102,7 @@ Cada responsabilidad se vincula con los requerimientos funcionales o las reglas 
 | **DocumentoPDF** | - `rutaArchivoPdf : String`<br>- `anioHistorico : Integer`<br>- `numeroPaginas : Integer`<br>- `pesoBytes : Long` | + `obtenerEnlaceDescarga() : String`<br>+ `validarFormatoPDF() : Boolean` | RF-03, RF-10, RN-02, Glosario |
 | **Imagen** | - `idImagen : Integer`<br>- `anioHistorico : Integer`<br>- `rutaImagen : String`<br>- `formatoImagen : String`<br>- `pesoBytes : Long` | + `obtenerEnlaceDescarga() : String`<br>+ `validarFormatoImagen() : Boolean` | RF-02, RF-03, RN-02, Glosario |
 | **Texto** | - `idTexto : Integer`<br>- `contenido : String`<br>- `tieneValorArtistico : Boolean`<br>- `extensionPalabras : Integer` | + `validarAutonomia() : Boolean`<br>+ `obtenerExtracto() : String` | RF-02, RN-02, Glosario |
-| **PropuestaAporte** | - `idPropuesta : Integer`<br>- `folioSeguimiento : String`<br>- `estado : EstadoPropuesta`<br>- `anioSugerido : Integer`<br>- `rutaArchivoTemporal : String`<br>- `motivoRechazo : String` | + `marcarEnRevision() : Void`<br>+ `aprobar(curador: Administrador) : Documento`<br>+ `rechazar(motivo: String) : Boolean` | RF-04, RF-06, RN-03 |
+| **PropuestaAporte** | - `idPropuesta : Integer`<br>- `folioSeguimiento : String`<br>- `estado : EstadoPropuesta`<br>- `anioSugerido : Integer`<br>- `rutaArchivoTemporal : String`<br>- `motivoRechazo : String` | + `marcarEnRevision() : Void`<br>+ `aprobar(administrador: Administrador) : Documento`<br>+ `rechazar(motivo: String) : Boolean` | RF-04, RF-06, RN-03 |
 | **Administrador** | - `idAdmin : Integer`<br>- `nombreCompleto : String`<br>- `correoElectronico : String`<br>- `passwordHash : String`<br>- `ultimoAcceso : DateTime` | + `autenticar(credenciales: String) : Boolean`<br>+ `cerrarSesion() : Void`<br>+ `dictaminarPropuesta(propuesta: PropuestaAporte, aprobado: Boolean, motivo: String) : Void` | RF-05, RF-06, RF-09, RF-10 |
 
 *Tipo enumerado auxiliar:*
@@ -117,8 +116,8 @@ Cada responsabilidad se vincula con los requerimientos funcionales o las reglas 
 | :--- | :--- | :--- | :--- | :--- |
 | **Locacion** | Composición | **Archivo** | `1` locación — `1` archivo | Cada locación posee un único archivo histórico que concentra todo su acervo. El archivo no existe sin su locación correspondiente (RF-02, Glosario). |
 | **Archivo** | Agregación | **Documento** | `1` archivo — `0..*` documentos | El archivo de una locación agrupa cero o más documentos históricos a lo largo del tiempo (RF-02, RF-07, RN-04, RN-05). |
-| **Documento** | Composición | **Texto** | `1` documento — `1` texto | Todo documento incluye su texto (caption descriptivo o texto artístico). El texto descriptivo depende existencialmente del documento que contextualiza (RF-02, RN-02, Glosario). |
-| **Documento** | Agregación | **Imagen** | `1` documento — `0..*` imágenes | Un documento contiene cero imágenes (cuando su texto tiene valor artístico propio) o una/varias imágenes que tienen sentido histórico por sí solas (RF-02, RN-02, Glosario). |
+| **Documento** | Composición | **Texto** | `1` documento — `0..1` textos | Un documento puede incluir un texto descriptivo o artístico que depende de él. La multiplicidad permite que existan documentos, como los PDF, que no requieran un objeto Texto independiente. |
+| **Documento** | Agregación | **Imagen** | `1` documento — `0..*` imágenes | Un documento puede agrupar ninguna, una o varias imágenes relacionadas con su contenido histórico. Las imágenes se administran como elementos independientes que pueden asociarse al documento. |
 | **DocumentoPDF** | Herencia | **Documento** | Subclase de `Documento` | `DocumentoPDF` es un tipo especializado de `Documento` para expedientes paginados indivisibles (`.pdf`) que hereda metadatos y comportamiento de `Documento` (RF-03, RN-02, Glosario). |
 | **Locacion** | Asociación | **PropuestaAporte** | `1` locación — `0..*` propuestas | Los usuarios envían propuestas dirigidas a una locación específica (RF-04, RN-03). |
 | **Administrador** | Asociación | **PropuestaAporte** | `1` administrador — `0..*` propuestas | El administrador revisa y dictamina múltiples propuestas ciudadanas (RF-06, RN-03). |
