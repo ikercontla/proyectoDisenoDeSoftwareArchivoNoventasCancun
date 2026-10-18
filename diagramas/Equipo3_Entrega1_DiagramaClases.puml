@@ -1,9 +1,176 @@
 @startuml Equipo3_Entrega1_DiagramaClases
+!pragma layout smetana
+title ArchivoNoventasCancún\nDiagrama de clases conceptual revisado
+top to bottom direction
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Arial
+skinparam defaultFontSize 13
 skinparam classAttributeIconSize 0
-skinparam monochrome false
-skinparam roundcorner 5
 skinparam shadowing false
-skinparam linetype ortho
+skinparam roundcorner 6
+skinparam nodesep 65
+skinparam ranksep 75
+skinparam padding 6
+skinparam class {
+  BackgroundColor #F5F8FC
+  BorderColor #34516D
+  ArrowColor #52677A
+  FontColor #172B3A
+  HeaderBackgroundColor #DFEAF5
+}
+skinparam note {
+  BackgroundColor #FFF9E8
+  BorderColor #B8A472
+}
+hide circle
+
+' Referencia: ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun
+' Revision consultada: 621f9e751fe9f993847f223f49c505a67e960980.
+' Se conservan las ocho clases de las CRC actuales y la herencia DocumentoPDF.
+' FechaHistorica es un tipo de valor sin identidad; EstadoPropuesta es un enum.
+' Los comentarios RF/RN justifican operaciones, no agregan nuevos requisitos.
+'
+' Supuestos de trabajo; no son reglas ya aprobadas del SRS:
+' SUP-UML-01: para varias imagenes, la fecha de orden es la mas antigua.
+' SUP-UML-02: la descarga de un documento ofrece sus originales por separado.
+' SUP-UML-03: al aprobar, el curador completa titulo y credito; credito opcional.
+' SUP-UML-04: MB = 1 000 000 bytes; el ZIP se limita por binarios sin comprimir.
+' SUP-UML-05: "aprobados" en RN-04 incluye publicaciones directas curadas (RF-10).
+
+class Locacion {
+  - idLocacion : Integer
+  - nombre : String
+  - descripcion : String
+  - latitud : Float
+  - longitud : Float
+  --
+  + validarDatos() : Boolean
+  + {static} buscar(criterio : String) : List<Locacion>
+}
+' validarDatos: RF-09, RN-01. buscar: RF-12.
+
+class Archivo {
+  - idArchivo : Integer
+  - /totalDocumentos : Integer
+  - /pesoAcumuladoBytes : Long
+  - fechaActualizacion : DateTime
+  --
+  + incorporar(documento : Documento) : Boolean
+  + generarLineaTiempo() : List<Documento>
+  + validarDescargaZIP() : Boolean
+  + generarZIP() : URL
+}
+' incorporar: RF-06, RF-10, RN-02.
+' generarLineaTiempo: RF-07, RN-04. ZIP: RF-08, RN-05.
+
+class Documento {
+  - idDocumento : Integer
+  - titulo : String
+  - cortesiaDe : String [0..1]
+  - fechaPublicacion : DateTime
+  --
+  + validarIntegridad() : Boolean
+  + prepararDescargas() : List<URL>
+  + calcularFechaOrden() : Date
+  + calcularPesoTotal() : Long
+  + agregarHipervinculo(destino : Documento) : Boolean
+  + agregarHipervinculo(destino : Locacion) : Boolean
+}
+' validarIntegridad: RF-10, RN-02. prepararDescargas: RF-03.
+' calcularFechaOrden: RF-07, RN-04. calcularPesoTotal: RF-08, RN-05.
+' agregarHipervinculo (ambas sobrecargas): RF-11, SUP-06 y CRC Documento 5.
+' Asociar imagenes y su Texto se expresa mediante las relaciones del modelo.
+' Se omiten constructores y setters de esas asociaciones conforme a la guia.
+
+class DocumentoPDF {
+  - rutaArchivoPDF : String
+  - nombreOriginal : String
+  - descripcion : String
+  - fechaHistorica : FechaHistorica
+  - numeroPaginas : Integer
+  - pesoBytes : Long
+  --
+  + validarIntegridad() : Boolean
+  + prepararDescargas() : List<URL>
+  + calcularFechaOrden() : Date
+  + calcularPesoTotal() : Long
+}
+' Redefine las operaciones de Documento para un único PDF indivisible.
+' Mismas justificaciones RF/RN que las operaciones heredadas.
+' descripcion: metadato externo obligatorio de RF-10; no descompone el PDF.
+
+class Imagen {
+  - idImagen : Integer
+  - fechaHistorica : FechaHistorica
+  - rutaImagen : String
+  - nombreOriginal : String
+  - formatoImagen : String
+  - pesoBytes : Long
+  --
+  + validarRecurso() : Boolean
+  + prepararDescarga() : URL
+}
+' validarRecurso: RF-10, RN-02. prepararDescarga: RF-03.
+
+class Texto {
+  - idTexto : Integer
+  - contenido : String
+  - /extensionPalabras : Integer
+}
+' Caption de las imagenes: RF-02, RF-10, RN-02 y glosario.
+' Sin autonomia artistica, getters ni metodos ajenos a los RF.
+' Los hipervinculos los gestiona Documento, como establece su CRC actual.
+
+class PropuestaAporte {
+  - idPropuesta : Integer
+  - folioSeguimiento : String
+  - estado : EstadoPropuesta = PENDIENTE
+  - descripcion : String
+  - fechaRecepcion : DateTime
+  - fechaDictamen : DateTime [0..1]
+  - fechaSugerida : FechaHistorica
+  - rutaArchivoTemporal : String
+  - nombreOriginal : String
+  - formatoArchivo : String
+  - pesoBytes : Long
+  - motivoRechazo : String [0..1]
+  --
+  + enviar() : String
+  + validarAporte() : Boolean
+  + marcarEnRevision(curador : Administrador) : Boolean
+  + aprobar(titulo : String, cortesia : String [0..1]) : Documento
+  + rechazar(motivo : String) : Boolean
+}
+' enviar, validarAporte: RF-04, RN-03.
+' revisar, aprobar, rechazar: RF-06, RN-03.
+' aprobar crea el Documento y lo incorpora al Archivo de la locación.
+' fechaDictamen registra el momento del estado final y permite aplicar SUP-04.
+' titulo y cortesia completados al aprobar: supuesto SUP-UML-03.
+
+class Administrador {
+  - idAdmin : Integer
+  - nombreCompleto : String
+  - correoElectronico : String
+  - passwordHash : String
+  - ultimoAcceso : DateTime
+  - intentosFallidos : Integer
+  --
+  + autenticar(contrasena : String) : Boolean
+  + registrarLocacion(locacion : Locacion) : Boolean
+  + publicar(documento : Documento, archivo : Archivo) : Boolean
+}
+' autenticar: RF-05. registrarLocacion: RF-09, RN-01.
+' publicar: RF-10, RN-02. La sesión autenticada autoriza la curaduría.
+
+class FechaHistorica <<datatype>> {
+  - anio : Integer
+  - mes : Integer [0..1]
+  - dia : Integer [0..1]
+  --
+  + validar() : Boolean
+  + calcularFechaOrden() : Date
+}
+' RF-04, RF-07, RF-10, RN-02, RN-04; precisión parcial: SUP-01.
 
 enum EstadoPropuesta {
   PENDIENTE
@@ -12,99 +179,75 @@ enum EstadoPropuesta {
   RECHAZADA
 }
 
-class Locacion {
-  - idLocacion : Integer
-  - nombre : String
-  - descripcion : String
-  - latitud : Float
-  - longitud : Float
-  + actualizarDatos(nombre : String, desc : String, lat : Float, lng : Float) : Boolean
-  + validarCoordenadas() : Boolean
-  + obtenerArchivo() : Archivo
-}
-
-class Archivo {
-  - idArchivo : Integer
-  - totalDocumentos : Integer
-  - pesoAcumuladoBytes : Long
-  - fechaActualizacion : DateTime
-  + agregarDocumento(documento : Documento) : Void
-  + generarLineaTiempo() : List<Documento>
-  + validarLimiteZIP() : Boolean
-  + comprimirArchivoZIP() : String
-}
-
-class Documento {
-  - idDocumento : Integer
-  - titulo : String
-  - cortesiaDe : String
-  - fechaPublicacion : DateTime
-  + vincularImagen(imagen : Imagen) : Void
-  + validarIntegridadDocumento() : Boolean
-  + agregarHipervinculo(idDestino : Integer) : Void
-}
-
-class DocumentoPDF {
-  - rutaArchivoPdf : String
-  - anioHistorico : Integer
-  - numeroPaginas : Integer
-  - pesoBytes : Long
-  + obtenerEnlaceDescarga() : String
-  + validarFormatoPDF() : Boolean
-}
-
-class Imagen {
-  - idImagen : Integer
-  - anioHistorico : Integer
-  - rutaImagen : String
-  - formatoImagen : String
-  - pesoBytes : Long
-  + obtenerEnlaceDescarga() : String
-  + validarFormatoImagen() : Boolean
-}
-
-class Texto {
-  - idTexto : Integer
-  - contenido : String
-  - tieneValorArtistico : Boolean
-  - extensionPalabras : Integer
-  + validarAutonomia() : Boolean
-  + obtenerExtracto() : String
-}
-
-class PropuestaAporte {
-  - idPropuesta : Integer
-  - folioSeguimiento : String
-  - estado : EstadoPropuesta
-  - anioSugerido : Integer
-  - rutaArchivoTemporal : String
-  - motivoRechazo : String
-  + marcarEnRevision() : Void
-  + aprobar(curador : Administrador) : Documento
-  + rechazar(motivo : String) : Boolean
-}
-
-class Administrador {
-  - idAdmin : Integer
-  - nombreCompleto : String
-  - correoElectronico : String
-  - passwordHash : String
-  - ultimoAcceso : DateTime
-  + autenticar(credenciales : String) : Boolean
-  + cerrarSesion() : Void
-  + dictaminarPropuesta(propuesta : PropuestaAporte, aprobado : Boolean, motivo : String) : Void
-}
-
-' Relaciones estructurales (Composición, Agregación y Herencia)
-Locacion "1" *-- "1" Archivo : posee >
-Archivo "1" o-- "0..*" Documento : agrupa >
-Documento "1" *-- "1" Texto : incluye >
-Documento "1" o-- "0..*" Imagen : contiene >
+' Relaciones de pertenencia. Solo Locacion-Archivo y Documento-Texto
+' afirman dependencia de ciclo de vida; no se inventa una política de borrado.
+Locacion "1" *-- "1" Archivo : posee
+Archivo "1" o-- "0..*" Documento : agrupa
+Documento "1" *-- "0..1\n" Texto : contextualiza
+Documento "1" o-- "0..*" Imagen : contiene
 Documento <|-- DocumentoPDF
 
-' Relaciones de asociación
-Locacion "1" <-- "0..*" PropuestaAporte : referencia <
-Administrador "1" --> "0..*" PropuestaAporte : dictamina >
-Administrador "1" --> "0..*" Documento : publica >
+' Moderación, autoría de publicación y procedencia.
+Locacion "1" -- "0..*" PropuestaAporte : recibe
+Administrador "0..1" -- "0..*" PropuestaAporte : revisa y dictamina
+Administrador "1" -- "0..*" Documento : publica
+PropuestaAporte "0..1" --> "0..1" Documento : genera al aprobarse
 
+' RF-11 y CRC Documento 5: el publicador gestiona referencias tipadas.
+Documento "0..*" --> "0..*" Documento : referencia documental
+Documento "0..*" --> "0..*" Locacion : referencia geográfica
+
+' Restricciones UML que complementan las multiplicidades condicionales.
+note bottom of Documento
+  RN-02
+  Instancia directa de Documento:
+  1..* imágenes y exactamente 1 texto.
+  DocumentoPDF: binario íntegro,
+  0 imágenes y 0 objetos Texto separados.
+  Su descripción externa es un atributo
+  obligatorio por RF-10.
+  El archivo reúne documentos publicados.
+end note
+
+note right of PropuestaAporte
+  RN-03
+  PENDIENTE -> REVISADA
+  REVISADA -> APROBADA o RECHAZADA
+  Al revisar se registra al curador.
+  Revisada o final: exactamente 1 curador.
+  Rechazo: motivo no vacío.
+  Aprobada: exactamente 1 documento;
+  los demás estados: ninguno.
+  Aprobar y publicar se confirman juntos.
+  RF-04: formatos admitidos y <= 25 MB.
+end note
+
+note left of Archivo
+  RN-04: al menos 2 publicados
+  con fechas de orden distintas.
+  RN-05: al menos 1 documento
+  y peso acumulado <= 100 MB.
+end note
+
+note bottom of FechaHistorica
+  SUP-01: año, año-mes o fecha completa.
+  Día requiere mes; validar calendario.
+  Para ordenar, usar el primer día
+  del periodo sin alterar el dato original.
+end note
+
+' Solo orden visual; no son relaciones del dominio.
+DocumentoPDF -[hidden]down- FechaHistorica
+FechaHistorica -[hidden]right- EstadoPropuesta
+Imagen -[hidden]right- DocumentoPDF
+
+legend bottom left
+  - privado   + público   / derivado   [0..1] opcional
+  Operación subrayada: de clase (static).
+  Rombo lleno: composición. Rombo vacío: agregación.
+  Triángulo hueco: herencia. Flecha: asociación navegable.
+  El visitante y Google Maps aparecen en el contexto, no como clases internas.
+  Supuestos: fecha más antigua por publicación y enlaces separados a sus originales.
+  Los supuestos y la trazabilidad completa están documentados en la guía adjunta.
+endlegend
 @enduml
