@@ -5,10 +5,11 @@ import java.sql.SQLException;
 import java.util.stream.Collectors;
 
 public record Documento(long id, long locacionId, long binarioId, String titulo, String descripcion,
-                        String fechaHistorica, String tipo, String nombreOriginal) {
+                        FechaHistorica fechaHistorica, String tipo, String nombreOriginal) {
     static Documento leer(ResultSet fila, int indice) throws SQLException {
         return new Documento(fila.getLong("id"), fila.getLong("locacion_id"), fila.getLong("binario_id"),
-                fila.getString("titulo"), fila.getString("descripcion"), fila.getString("fecha_historica"),
+                fila.getString("titulo"), fila.getString("descripcion"),
+                FechaHistorica.desdeRegistro(fila.getString("fecha_historica")),
                 fila.getString("tipo"), fila.getString("nombre"));
     }
 
@@ -26,11 +27,4 @@ public record Documento(long id, long locacionId, long binarioId, String titulo,
         return TextoVinculado.separar(descripcion).stream().map(TextoVinculado::texto).collect(Collectors.joining());
     }
 
-    String fechaOrden() {
-        return switch (fechaHistorica.length()) {
-            case 4 -> fechaHistorica + "-01-01";
-            case 7 -> fechaHistorica + "-01";
-            default -> fechaHistorica;
-        };
-    }
 }

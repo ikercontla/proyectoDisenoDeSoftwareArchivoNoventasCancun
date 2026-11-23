@@ -47,9 +47,9 @@ public class Curaduria {
         String descripcion = texto(descripcionEntrada, "descripcion", "Escribe una descripción de hasta 2000 caracteres.", 2000, errores);
         long locacion = id(locacionEntrada);
         if (archivo.locacion(locacion) == null) errores.put("locacion", "Selecciona una locación activa.");
-        String fecha = null;
+        FechaHistorica fecha = null;
         try {
-            fecha = PropuestaAporte.normalizarFecha(fechaEntrada);
+            fecha = FechaHistorica.desdeEntrada(fechaEntrada);
             if (fecha == null) errores.put("fecha", "Indica el año de procedencia.");
         } catch (ErrorAplicacion error) {
             errores.put("fecha", error.getMessage());

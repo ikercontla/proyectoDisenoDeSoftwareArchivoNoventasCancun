@@ -48,7 +48,7 @@ public class Archivo {
                 INSERT INTO documentos (locacion_id, binario_id, propuesta_folio, titulo, descripcion, fecha_historica)
                 VALUES (?, ?, ?, ?, ?, ?) RETURNING id
                 """, Long.class, documento.locacionId(), documento.binarioId(), folio, documento.titulo(),
-                documento.descripcion(), documento.fechaHistorica());
+                documento.descripcion(), FechaHistorica.textoDe(documento.fechaHistorica()));
     }
 
     long guardarOriginal(String nombre, String tipo, byte[] contenido) {
@@ -85,12 +85,12 @@ public class Archivo {
         long binario = guardarOriginal(nombre, "application/pdf", pdf);
         long primeraFicha = incorporar(new Documento(0, id, binario, "Ficha de demostración",
                 "Documento de muestra. Explora también [Palacio Municipal](/locaciones/" + municipio + ").",
-                "1995", "application/pdf", nombre), null);
+                FechaHistorica.desdeEntrada("1995"), "application/pdf", nombre), null);
         String nombreComplementario = "nota-de-demostracion.pdf";
         long complementario = guardarOriginal(nombreComplementario, "application/pdf", pdf);
         incorporar(new Documento(0, id, complementario, "Nota de demostración",
                 "Segundo documento de muestra para la cronología. Consulta la [ficha de demostración](/documentos/" +
-                        primeraFicha + ").", "1998-03", "application/pdf", nombreComplementario), null);
+                        primeraFicha + ").", FechaHistorica.desdeEntrada("1998-03"), "application/pdf", nombreComplementario), null);
     }
 
     private static Locacion leerLocacion(ResultSet fila, int indice) throws SQLException {

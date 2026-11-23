@@ -42,13 +42,13 @@ public class Propuestas {
         if (archivo.locacion(locacion) == null || resena.isEmpty() || resena.length() > 2000) {
             throw new ErrorAplicacion(422, "Selecciona una locación y escribe una descripción de hasta 2000 caracteres.");
         }
-        String fechaHistorica = PropuestaAporte.normalizarFecha(fecha);
+        FechaHistorica fechaHistorica = FechaHistorica.desdeEntrada(fecha);
         String folio = UUID.randomUUID().toString();
         long binario = archivo.guardarOriginal(original.nombre(), original.tipo(), original.contenido());
         db.update("""
                 INSERT INTO propuestas (folio, locacion_id, binario_id, descripcion, fecha_historica)
                 VALUES (?, ?, ?, ?, ?)
-                """, folio, locacion, binario, resena, fechaHistorica);
+                """, folio, locacion, binario, resena, FechaHistorica.textoDe(fechaHistorica));
         return folio;
     }
 
@@ -71,7 +71,8 @@ public class Propuestas {
         Documento documento = propuesta.paraPublicar(titulo, fecha);
         dictaminar(folio, usuario, "Aprobada", null);
         archivo.incorporar(documento, folio);
-        db.update("UPDATE propuestas SET fecha_historica = ? WHERE folio = ?", documento.fechaHistorica(), folio);
+        db.update("UPDATE propuestas SET fecha_historica = ? WHERE folio = ?",
+                FechaHistorica.textoDe(documento.fechaHistorica()), folio);
     }
 
     void rechazar(String folio, String usuario, String motivo) {
