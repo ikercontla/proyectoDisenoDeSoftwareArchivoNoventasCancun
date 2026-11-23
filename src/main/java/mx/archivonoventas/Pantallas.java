@@ -262,9 +262,9 @@ class Pantallas {
     String adjuntoInvalido(MultipartException e, HttpServletRequest req, Model modelo, HttpServletResponse res) {
         res.setStatus(e instanceof MaxUploadSizeExceededException ? 413 : 422);
         if (req.getServletPath().equals(PUBLICAR_DOCUMENTO)) {
-            return formularioPublicacion(modelo, Map.of(), Map.of("archivo", PropuestaAporte.ARCHIVO_INVALIDO));
+            return formularioPublicacion(modelo, Map.of(), Map.of("archivo", Adjunto.ARCHIVO_INVALIDO));
         }
-        return formularioAporte(modelo, "", "", "", PropuestaAporte.ARCHIVO_INVALIDO);
+        return formularioAporte(modelo, "", "", "", Adjunto.ARCHIVO_INVALIDO);
     }
 
     private Documento buscarDocumento(long id) {

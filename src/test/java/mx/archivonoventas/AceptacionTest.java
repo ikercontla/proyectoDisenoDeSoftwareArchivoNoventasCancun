@@ -156,7 +156,7 @@ class AceptacionTest {
         var grande = multipart("archivo.pdf", new byte[25_000_001]);
         for (var r : List.of(ausente, zip, firma, grande)) {
             assertThat(r.statusCode()).isIn(422, 413);
-            assertThat(texto(r)).contains(PropuestaAporte.ARCHIVO_INVALIDO);
+            assertThat(texto(r)).contains("Debe adjuntar un archivo válido (.jpg, .png, .webp, .pdf de hasta 25 MB)");
         }
         assertThat(db.queryForObject("SELECT COUNT(*) FROM propuestas", Integer.class)).isEqualTo(antes);
     }

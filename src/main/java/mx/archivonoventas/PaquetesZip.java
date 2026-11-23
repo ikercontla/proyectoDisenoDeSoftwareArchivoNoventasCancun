@@ -75,7 +75,7 @@ class PaquetesZip {
     }
 
     private static String nombreDisponible(String original, Set<String> usados) {
-        String nombre = PropuestaAporte.nombreSeguro(original).replaceAll("[:*?\"<>|]", "_");
+        String nombre = Adjunto.nombreSeguro(original).replaceAll("[:*?\"<>|]", "_");
         if (nombre.isBlank() || nombre.equals(".") || nombre.equals("..")) nombre = "documento";
         int punto = nombre.lastIndexOf('.');
         String base = punto > 0 ? nombre.substring(0, punto) : nombre;
