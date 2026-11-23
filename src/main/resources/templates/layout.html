@@ -7,7 +7,7 @@
   <meta th:if="${volverMapa}" http-equiv="refresh" content="5; url=/">
   <title th:text="|${titulo} · Archivo Noventas Cancún|">Archivo Noventas Cancún</title>
   <link rel="stylesheet" href="/estilos.css">
-  <script th:if="${usaMapa}" src="/mapa.js" defer></script>
+  <script th:if="${usaMapa}" type="module" src="/mapa.js"></script>
 </head>
 <body>
   <a class="saltar" href="#contenido">Ir al contenido</a>

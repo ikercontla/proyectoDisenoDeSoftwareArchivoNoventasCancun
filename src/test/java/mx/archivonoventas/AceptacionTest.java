@@ -80,8 +80,14 @@ class AceptacionTest {
         var r = get("/");
         assertThat(r.statusCode()).isEqualTo(200);
         assertThat(texto(r)).contains("data-key=\"clave-simulada\"", "data-lat=\"21.16\"", "data-lng=\"-86.83\"",
-                "href=\"/locaciones/1\"", "/mapa.js").doesNotContain("Locación inactiva");
-        assertThat(texto(get("/mapa.js"))).contains("AdvancedMarkerElement", "gmp-click", "Consultar archivo");
+                "href=\"/locaciones/1\"", "type=\"module\" src=\"/mapa.js\"").doesNotContain("Locación inactiva");
+        var entrada = get("/mapa.js");
+        assertThat(entrada.statusCode()).isEqualTo(200);
+        assertThat(cabecera(entrada, "Content-Type")).contains("javascript");
+        assertThat(texto(entrada)).contains("./mapa-vista.js", "./mapa-google.js");
+        assertThat(texto(get("/mapa-vista.js"))).contains("proveedor.cargar", "Consultar archivo")
+                .doesNotContain("window.google", "maps.googleapis.com");
+        assertThat(texto(get("/mapa-google.js"))).contains("AdvancedMarkerElement", "gmp-click");
     }
 
     @Test
@@ -89,7 +95,8 @@ class AceptacionTest {
     void catalogoAlternativo() throws Exception {
         assertThat(texto(get("/"))).contains("21.16000, -86.83000", "21.19000, -86.90000", "data-estado-mapa")
                 .doesNotContain("Locación inactiva");
-        assertThat(texto(get("/mapa.js"))).contains("script.onerror = fallar", "panel.hidden = true");
+        assertThat(texto(get("/mapa-vista.js"))).contains("panel.hidden = true");
+        assertThat(texto(get("/mapa-google.js"))).contains("script.onerror = solicitud.fallar");
     }
 
     @Test
