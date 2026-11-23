@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<th:block th:fragment="inicio">
+  <header class="portada">
+    <h1>La memoria de Cancún,<br> lugar por lugar.</h1>
+    <p>Explora las locaciones y consulta los documentos que reúnen su historia.</p>
+  </header>
+  <section class="explorador" aria-label="Explorar por locación">
+    <div class="mapa-panel" data-mapa th:attr="data-key=${mapaClave},data-map-id=${mapaId}" hidden>
+      <div class="mapa" aria-label="Mapa interactivo de locaciones"></div>
+    </div>
+    <section class="catalogo" aria-labelledby="titulo-catalogo">
+      <div class="catalogo-cabecera">
+        <h2 id="titulo-catalogo">Locaciones</h2>
+        <span class="cantidad" th:text="${locaciones.size()}"></span>
+      </div>
+      <p class="aviso" data-estado-mapa role="status"
+         th:text="${usaMapa ? 'Cargando el mapa…' : 'El mapa no está disponible. Puedes explorar las locaciones en el catálogo.'}"></p>
+      <noscript th:if="${usaMapa}"><p>Activa JavaScript para abrir el mapa interactivo.</p></noscript>
+      <ul class="lista-locaciones" th:unless="${locaciones.empty}">
+        <li th:each="l : ${locaciones}" th:attr="data-lat=${l.latitud},data-lng=${l.longitud}">
+          <a th:href="@{/locaciones/{id}(id=${l.id})}" th:text="${l.nombre}"></a>
+          <p class="resena" th:text="${l.descripcion}"></p>
+          <p th:replace="~{pantallas :: coordenadas(${l})}"></p>
+        </li>
+      </ul>
+      <p th:if="${locaciones.empty}">Aún no hay locaciones registradas.</p>
+    </section>
+  </section>
+</th:block>
+
+<th:block th:fragment="locacion">
+  <a th:replace="~{pantallas :: enlaceMapa}"></a>
+  <header class="encabezado">
+    <p th:replace="~{pantallas :: coordenadas(${locacion})}"></p>
+    <h1 th:text="${locacion.nombre}"></h1>
+    <p th:text="${locacion.descripcion}"></p>
+    <a class="boton secundario" th:href="@{/aportar(locacion=${locacion.id})}">Aportar a esta locación</a>
+  </header>
+  <section aria-labelledby="documentos">
+    <h2 id="documentos">Documentos del archivo</h2>
+    <ul class="documentos" th:unless="${documentos.empty}">
+      <li class="documento" th:each="doc : ${documentos}">
+        <div>
+          <h3 th:text="${doc.titulo}"></h3>
+          <p th:text="${doc.descripcion}"></p>
+          <p class="coordenadas" th:if="${doc.fechaHistorica}" th:text="${doc.fechaHistorica}"></p>
+        </div>
+        <a class="boton secundario" th:href="${doc.referenciaDescarga()}" th:text="|Descargar ${doc.nombreOriginal}|"></a>
+      </li>
+    </ul>
+    <p th:if="${documentos.empty}">Esta locación aún no tiene documentos publicados.</p>
+  </section>
+</th:block>
+
+<th:block th:fragment="locacionAusente">
+  <header class="encabezado compacto">
+    <h1>La locación no existe</h1>
+    <p>Volverás al mapa general en unos segundos.</p>
+    <a th:replace="~{pantallas :: enlaceMapa}"></a>
+  </header>
+</th:block>
+
+<th:block th:fragment="aporte">
+  <header class="encabezado compacto">
+    <h1>Aportar al archivo</h1>
+    <p>Envía un documento o una fotografía de una locación para que el equipo del archivo revise tu aporte.</p>
+  </header>
+  <p th:replace="~{pantallas :: aviso}"></p>
+  <form class="formulario" action="/aportar" method="post" enctype="multipart/form-data" th:unless="${locaciones.empty}">
+    <label>Locación
+      <select name="locacion" required>
+        <option value="">Elige una locación</option>
+        <option th:each="l : ${locaciones}" th:value="${l.id}" th:text="${l.nombre}"
+                th:selected="${seleccion == l.id.toString()}"></option>
+      </select>
+    </label>
+    <label>Descripción <textarea name="descripcion" rows="4" maxlength="2000" required th:text="${descripcion}"></textarea></label>
+    <label>Fecha histórica (opcional)
+      <input name="fecha" maxlength="10" th:value="${fecha}" aria-describedby="fecha-ayuda">
+      <small id="fecha-ayuda">Puedes indicar el año, el año y mes o la fecha completa (AAAA-MM-DD).</small>
+    </label>
+    <label>Archivo original
+      <input name="archivo" type="file" accept=".jpg,.png,.webp,.pdf" aria-describedby="archivo-ayuda" required>
+      <small id="archivo-ayuda">JPG, PNG, WebP o PDF de hasta 25 MB.</small>
+    </label>
+    <button type="submit">Enviar aporte</button>
+  </form>
+  <p th:if="${locaciones.empty}">Podrás aportar cuando haya una locación registrada.</p>
+</th:block>
+
+<th:block th:fragment="aporteRegistrado">
+  <header class="encabezado compacto">
+    <h1>Aporte recibido</h1>
+    <p>Tu propuesta queda pendiente de revisión. Guarda este folio.</p>
+    <p class="folio"><code th:text="${folio}"></code></p>
+    <a th:replace="~{pantallas :: enlaceMapa}"></a>
+  </header>
+</th:block>
+
+<th:block th:fragment="acceso">
+  <header class="encabezado compacto"><h1>Administración</h1><p>Ingresa para revisar los aportes ciudadanos.</p></header>
+  <p th:replace="~{pantallas :: aviso}"></p>
+  <form class="formulario" action="/administracion" method="post">
+    <label>Usuario <input name="usuario" th:value="${usuario}" autocomplete="username" maxlength="120" required></label>
+    <label>Contraseña <input type="password" name="contrasena" autocomplete="current-password" maxlength="256" required></label>
+    <button type="submit">Iniciar sesión</button>
+  </form>
+</th:block>
+
+<th:block th:fragment="panel">
+  <div class="encabezado encabezado-panel">
+    <h1>Propuestas ciudadanas</h1>
+    <form action="/administracion/salir" method="post"><button class="secundario" type="submit">Cerrar sesión</button></form>
+  </div>
+  <ul class="documentos" th:unless="${propuestas.empty}">
+    <li class="documento" th:each="aporte : ${propuestas}" th:with="ficha=|/administracion/propuestas/${aporte.folio}|">
+      <div>
+        <h2 th:text="${aporte.nombre}"></h2>
+        <p th:text="|${aporte.locacion} · ${aporte.recibida} UTC|"></p>
+        <span th:replace="~{pantallas :: etiquetaEstado(${aporte.estado})}"></span>
+      </div>
+      <form th:if="${aporte.estado == 'Pendiente'}" th:action="|${ficha}/revisar|" method="post">
+        <button type="submit">Abrir propuesta</button>
+      </form>
+      <a class="boton secundario" th:unless="${aporte.estado == 'Pendiente'}" th:href="${ficha}">Ver propuesta</a>
+    </li>
+  </ul>
+  <p th:if="${propuestas.empty}">Aún no se han recibido propuestas.</p>
+</th:block>
+
+<th:block th:fragment="propuesta">
+  <a class="enlace-volver" href="/administracion/propuestas">Volver a propuestas</a>
+  <header class="encabezado compacto">
+    <span th:replace="~{pantallas :: etiquetaEstado(${p.estado})}"></span>
+    <h1 th:text="${p.nombre}"></h1>
+    <p><span th:text="${p.locacion}"></span> · Folio <code th:text="${p.folio}"></code></p>
+    <p th:text="${p.descripcion}"></p>
+    <a class="boton secundario" th:href="|${ruta}/original|">Descargar original del aporte</a>
+    <p class="aviso" th:if="${p.motivo}"><strong>Justificación</strong><br><span th:text="${p.motivo}"></span></p>
+  </header>
+  <p th:replace="~{pantallas :: aviso}"></p>
+  <form th:if="${p.estado == 'Pendiente'}" th:action="|${ruta}/revisar|" method="post">
+    <button type="submit">Marcar en revisión</button>
+  </form>
+  <div class="dictamenes" th:if="${p.estado == 'Revisada'}" th:with="esPdf=${p.tipo == 'application/pdf'}">
+    <form class="formulario" th:action="|${ruta}/aprobar|" method="post">
+      <h2>Aprobar y publicar</h2>
+      <label>Título de publicación <input name="titulo" maxlength="240" placeholder="Nombre del archivo por defecto"></label>
+      <label>Fecha histórica <span th:if="${esPdf}">(opcional)</span>
+        <input name="fecha" maxlength="10" th:value="${p.fechaHistorica}" th:required="${!esPdf}">
+      </label>
+      <button type="submit">Aprobar propuesta</button>
+    </form>
+    <form class="formulario" th:action="|${ruta}/rechazar|" method="post">
+      <h2>Rechazar</h2>
+      <label>Justificación <textarea name="motivo" rows="4" maxlength="2000" required></textarea></label>
+      <button class="secundario" type="submit">Rechazar propuesta</button>
+    </form>
+  </div>
+</th:block>
+
+<th:block th:fragment="error">
+  <header class="encabezado compacto">
+    <h1 th:text="${mensaje}"></h1>
+    <a th:replace="~{pantallas :: enlaceMapa}"></a>
+  </header>
+</th:block>
+
+<a th:fragment="enlaceMapa" class="enlace-volver" href="/">Volver al mapa y catálogo</a>
+<p th:fragment="aviso" th:if="${mensaje}" class="aviso error" role="alert" th:text="${mensaje}"></p>
+<p th:fragment="coordenadas(l)" class="coordenadas"
+   th:text="|${#numbers.formatDecimal(l.latitud, 1, 5, 'POINT')}, ${#numbers.formatDecimal(l.longitud, 1, 5, 'POINT')}|"></p>
+<span th:fragment="etiquetaEstado(valor)" class="estado" th:classappend="${valor.toLowerCase()}" th:text="${valor}"></span>
+</body>
+</html>

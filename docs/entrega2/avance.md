@@ -2,7 +2,7 @@
 
 Equipo 03 · Diseño de Software · 22 de noviembre de 2026
 
-La [primera implementación](../../README.md) ya se puede ejecutar en local. Su [registro de verificación](verificacion-v1.md) incluye los resultados iniciales de la suite y la validación pendiente con el proveedor de mapas.
+La [primera implementación en Java](../../README.md) ya se puede ejecutar en local. Su [registro de verificación](verificacion-v1.md) incluye los resultados iniciales de la suite y la validación pendiente con el proveedor de mapas.
 
 ## Punto de partida
 
@@ -53,7 +53,7 @@ Las tarjetas CRC de la Entrega 1 identifican `PropuestaAporte`, `Archivo` y `Doc
 - **CBO**. Listar las clases que usa y las clases que la usan. Anotar para cada vínculo el atributo, firma, creación o llamada que lo demuestra. Unir ambos grupos y contar cada clase una sola vez. Excluir tipos de la biblioteca estándar, excepciones y enumeraciones.
 - **LCOM**. Listar los métodos con los atributos propios que usa cada uno. Excluir constructores, getters y setters. Formar las `n(n−1)/2` parejas y marcar cada una como `P` si no comparte atributos o `Q` si comparte al menos uno. Verificar que `P + Q = n(n−1)/2` y calcular `máx(0, P − Q)`.
 
-La implementación de las tres clases se encuentra en [`src/dominio.mjs`](../../src/dominio.mjs). Queda pendiente registrar los cálculos iniciales y repetirlos con el mismo criterio en la versión refactorizada.
+La implementación se encuentra en [`PropuestaAporte.java`](../../src/main/java/mx/archivonoventas/PropuestaAporte.java), [`Archivo.java`](../../src/main/java/mx/archivonoventas/Archivo.java) y [`Documento.java`](../../src/main/java/mx/archivonoventas/Documento.java). Queda pendiente registrar los cálculos iniciales y repetirlos con el mismo criterio en la versión refactorizada.
 
 ## Secuencia de la entrega
 

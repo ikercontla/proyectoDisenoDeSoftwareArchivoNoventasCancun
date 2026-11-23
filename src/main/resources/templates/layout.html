@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Consulta el acervo por locación y aporta documentos a la memoria de Cancún.">
+  <meta th:if="${volverMapa}" http-equiv="refresh" content="5; url=/">
+  <title th:text="|${titulo} · Archivo Noventas Cancún|">Archivo Noventas Cancún</title>
+  <link rel="stylesheet" href="/estilos.css">
+  <script th:if="${usaMapa}" src="/mapa.js" defer></script>
+</head>
+<body>
+  <a class="saltar" href="#contenido">Ir al contenido</a>
+  <header class="cabecera">
+    <div class="contenedor barra">
+      <a class="marca" href="/">Archivo <strong>Noventas</strong><span>Cancún</span></a>
+      <nav aria-label="Navegación principal">
+        <a href="/" th:attr="aria-current=${seccion == 'mapa' ? 'page' : null}">Explorar</a>
+        <a href="/aportar" th:attr="aria-current=${seccion == 'aportar' ? 'page' : null}">Aportar</a>
+        <a href="/administracion" th:attr="aria-current=${seccion == 'admin' ? 'page' : null}">Administración</a>
+      </nav>
+    </div>
+  </header>
+  <main class="contenedor principal" id="contenido">
+    <th:block th:replace="~{pantallas :: ${vista}}"></th:block>
+  </main>
+  <footer class="pie"><div class="contenedor">Archivo Noventas Cancún</div></footer>
+</body>
+</html>

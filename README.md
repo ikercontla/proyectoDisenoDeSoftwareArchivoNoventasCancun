@@ -4,14 +4,17 @@ Aplicación del Equipo 03 para consultar documentos por locación, recibir aport
 
 ## Ejecutar en local
 
-Requiere Node.js 24 o superior. Usa SQLite integrado en Node.js y guarda el catálogo, los binarios y las propuestas en `.data/archivo.sqlite`.
+Requiere JDK 17 o superior. El servidor usa Java y Spring Boot, con plantillas HTML, CSS y SQLite. Maven Wrapper descarga Maven y las dependencias en la primera compilación.
 
 ```powershell
-npm.cmd run demo
-npm.cmd start
+.\mvnw.cmd verify
+java -jar target/archivo-noventas-cancun-1.0.0.jar demo
+java -jar target/archivo-noventas-cancun-1.0.0.jar
 ```
 
-Abrir [http://127.0.0.1:3000](http://127.0.0.1:3000). La carga de demostración inicializa una base vacía con dos locaciones y un PDF de ejemplo. Para elegir otra base, establecer `ARCHIVO_DB` antes de ejecutar los comandos.
+En macOS y Linux, usar `./mvnw verify` para compilar. Abrir [http://127.0.0.1:3000](http://127.0.0.1:3000). La carga de demostración inicializa una base vacía con dos locaciones y un PDF de ejemplo.
+
+El catálogo, los binarios, las propuestas y las cuentas se guardan en `.data/archivo.sqlite`. El servidor Java puede abrir la base de la versión anterior. Para usar otra base, establecer `ARCHIVO_DB` antes de iniciar la aplicación o ejecutar cualquiera de los comandos de configuración.
 
 ### Administración
 
@@ -20,7 +23,7 @@ Crear una cuenta en la misma base y abrir [Administración](http://127.0.0.1:300
 ```powershell
 $env:ADMIN_USER = 'curador'
 $env:ADMIN_PASSWORD = Read-Host 'Contraseña de al menos 12 caracteres' -MaskInput
-npm.cmd run admin
+java -jar target/archivo-noventas-cancun-1.0.0.jar admin
 Remove-Item Env:ADMIN_PASSWORD
 ```
 
@@ -30,12 +33,12 @@ Abrir una propuesta pendiente la pasa a `Revisada`. Al aprobarla, el documento a
 
 Para habilitar el mapa interactivo, establecer `GOOGLE_MAPS_API_KEY` con una clave de navegador autorizada para Maps JavaScript API y el origen local. Es una clave que el proveedor requiere enviar al navegador. Establecer `GOOGLE_MAPS_MAP_ID` para usar el ID del equipo. Si se omite el ID, se usa `DEMO_MAP_ID`.
 
-El catálogo alternativo sigue disponible cuando falta la configuración o falla la carga del mapa. Para verificar la contingencia, bloquear `maps.googleapis.com` en las herramientas de red del navegador y recargar.
+El navegador usa un script de JavaScript para cargar Google Maps y mostrar las fichas al seleccionar marcadores. El catálogo alternativo sigue disponible cuando falta la configuración o falla la carga del mapa. Para verificar la contingencia, bloquear `maps.googleapis.com` en las herramientas de red del navegador y recargar.
 
 ## Verificación
 
 ```powershell
-npm.cmd test
+.\mvnw.cmd test
 ```
 
-La suite usa una base en memoria y un servidor HTTP local de puerto efímero. Consulta el [registro de la primera ejecución](docs/entrega2/verificacion-v1.md) y el [avance de la Entrega 2](docs/entrega2/avance.md).
+La suite usa una base SQLite temporal y un servidor HTTP local de puerto efímero. Consulta el [registro de verificación](docs/entrega2/verificacion-v1.md) y el [avance de la Entrega 2](docs/entrega2/avance.md).
