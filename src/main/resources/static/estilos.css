@@ -84,6 +84,20 @@ button:hover, .boton:hover { background: #164438; }
 .secundario:hover { background: var(--verde-claro); }
 .folio { width: fit-content; padding: .6rem .85rem; background: var(--verde-claro); border-radius: 5px; margin-block: 1rem; }
 .dictamenes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.acciones { display: flex; align-items: start; flex-wrap: wrap; gap: .6rem; }
+.buscador { max-width: 650px; margin-bottom: 1.2rem; }
+.buscador label { display: inline-block; font-weight: 650; margin-bottom: .35rem; }
+.buscador input { flex: 1 1 15rem; width: auto; }
+.aviso-busqueda { position: sticky; top: .75rem; z-index: 1; }
+.cronologia { margin: 0 0 2rem; }
+.cronologia ol { margin: 1rem 0 0 .3rem; padding: 0 0 0 1.2rem; border-left: 2px solid var(--linea); list-style: none; }
+.cronologia li { position: relative; display: grid; padding: .45rem 0 .6rem; }
+.cronologia li::before { content: ""; position: absolute; top: .9rem; left: -1.54rem; width: .55rem; height: .55rem; border-radius: 50%; background: var(--verde); }
+.texto-vinculado { max-width: 68ch; white-space: pre-wrap; margin-bottom: 1.25rem; }
+.gestion { margin-bottom: 1rem; }
+.coordenadas-formulario { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+.formulario [aria-invalid="true"] { border-color: #a33f27; }
+.formulario .campo-error { color: #742b18; }
 .pie { border-top: 1px solid var(--linea); padding-block: 1rem; font-family: var(--serif); color: var(--suave); }
 
 @media (max-width: 720px) {

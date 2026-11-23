@@ -37,19 +37,14 @@ public class Propuestas {
 
     @Transactional(rollbackFor = IOException.class)
     public String recibir(long locacion, String descripcion, String fecha, MultipartFile adjunto) throws IOException {
-        if (adjunto == null || adjunto.isEmpty() || adjunto.getSize() > PropuestaAporte.LIMITE) {
-            throw new ErrorAplicacion(422, PropuestaAporte.ARCHIVO_INVALIDO);
-        }
-        String nombre = PropuestaAporte.nombreSeguro(adjunto.getOriginalFilename());
-        byte[] datos = adjunto.getBytes();
-        String tipo = PropuestaAporte.tipoArchivo(nombre, datos);
+        Adjunto original = Adjunto.leer(adjunto);
         String resena = descripcion.strip();
         if (archivo.locacion(locacion) == null || resena.isEmpty() || resena.length() > 2000) {
             throw new ErrorAplicacion(422, "Selecciona una locación y escribe una descripción de hasta 2000 caracteres.");
         }
         String fechaHistorica = PropuestaAporte.normalizarFecha(fecha);
         String folio = UUID.randomUUID().toString();
-        long binario = archivo.guardarOriginal(nombre, tipo, datos);
+        long binario = archivo.guardarOriginal(original.nombre(), original.tipo(), original.contenido());
         db.update("""
                 INSERT INTO propuestas (folio, locacion_id, binario_id, descripcion, fecha_historica)
                 VALUES (?, ?, ?, ?, ?)

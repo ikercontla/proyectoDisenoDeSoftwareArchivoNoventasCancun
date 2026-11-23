@@ -1,6 +1,6 @@
-# Primera implementación · Verificación inicial
+# Verificación de la implementación
 
-La implementación en Java 17 con Spring Boot mantiene los seis RF Must y el esquema SQLite de la versión anterior. Las locaciones y el PDF de demostración son datos de prueba.
+La etiqueta [`base-must`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/base-must) apunta al commit `4366f4b` con RF-01 a RF-06. Esta rama amplía la implementación Java con los cuatro Should y los dos Could. Las pruebas se ejecutaron con Java 17, una base SQLite temporal y un servidor HTTP de puerto efímero.
 
 ## Resultados de `mvnw verify`
 
@@ -19,10 +19,29 @@ La implementación en Java 17 con Spring Boot mantiene los seis RF Must y el esq
 | V-06a | Cumple | La propuesta revisada pasa a `Aprobada` y publica un solo documento en la locación. |
 | V-06b | Cumple | Sin motivo se conserva `Revisada`. Con motivo se registra `Rechazada`. |
 
-Pasaron 13 pruebas, incluida la compatibilidad de inicio de sesión con un hash generado por la versión Node.js. El JAR de Java 17 arrancó con los datos de demostración y se revisaron en el navegador el catálogo alternativo, la ficha del documento y el formulario de aportes con la locación preseleccionada.
+| Caso | Resultado inicial | Evidencia de la aserción |
+|---|---|---|
+| V-07a | Cumple | La línea del tiempo ordena las fechas y excluye documentos sin fecha. |
+| V-07b | Cumple | Se oculta con cero documentos, un solo documento o dos fechas que corresponden al mismo día de orden. |
+| V-08a | Cumple | El ZIP contiene los originales con sus bytes intactos y distingue nombres repetidos. |
+| V-08b | Cumple | Permite exactamente 100 MB, rechaza el exceso y exige al menos un documento. |
+| V-09a | Cumple | El alta autenticada devuelve la nueva ficha y las coordenadas aparecen en los datos del mapa. |
+| V-09b | Cumple | Los nombres duplicados y las coordenadas inválidas se señalan por campo. La operación no crea una locación. |
+| V-10a | Cumple | La publicación directa queda visible y el original se puede descargar. |
+| V-10b | Cumple | Faltar la locación o la fecha muestra los campos obligatorios sin guardar binarios ni documentos. |
+| V-11a | Cumple | Los enlaces en la descripción navegan a una locación o documento existente. |
+| V-11b | Cumple | Un destino inactivo devuelve al documento de origen y muestra el aviso. |
+| V-12a | Cumple | Se filtran las locaciones por nombre o reseña y se entregan al mapa únicamente las coincidencias. |
+| V-12b | Cumple | Una búsqueda sin coincidencias mantiene el filtro previo y muestra el aviso. |
 
-Queda pendiente ejecutar V-01a y V-01b con una clave autorizada de Google Maps y registrar el tiempo de contingencia de RNF-03. La etiqueta `v1-antes` queda pendiente de esa validación. La comparación posterior se completará tras la refactorización.
+Pasaron 25 pruebas, incluida la compatibilidad de inicio de sesión con un hash generado por la versión Node.js. Las fechas parciales se ordenan por el primer día de su periodo, de acuerdo con SUP-01.
+
+## Medición de rendimiento
+
+Para RNF-02 se midieron diez descargas HTTP concurrentes en localhost después de una solicitud de calentamiento. El archivo de prueba tenía 50 documentos sintéticos de 2 MB cada uno. Se contó desde el envío de cada solicitud hasta recibir el ZIP completo. El P95 local por rango más cercano fue de **3,898 s** frente al máximo de 4 s del SRS.
+
+Queda pendiente ejecutar V-01a y V-01b con una clave autorizada de Google Maps, medir RNF-01 y comprobar el tiempo de contingencia de RNF-03. La disponibilidad mensual de RNF-03 requiere un entorno desplegado y monitoreado. La etiqueta `v1-antes` y la comparación posterior se registrarán en el flujo de refactorización.
 
 ## Uso de IA
 
-Se usó OpenAI Codex para implementar la base a partir del SRS, migrar el servidor a Java y las vistas a plantillas HTML, y ejecutar la suite de aceptación.
+Se usó OpenAI Codex para implementar la base, migrar el servidor a Java, añadir RF-07 a RF-12 y ejecutar las pruebas y la medición local.

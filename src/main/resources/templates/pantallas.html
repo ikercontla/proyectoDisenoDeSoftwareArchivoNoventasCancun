@@ -6,6 +6,19 @@
     <h1>La memoria de Cancún,<br> lugar por lugar.</h1>
     <p>Explora las locaciones y consulta los documentos que reúnen su historia.</p>
   </header>
+  <form class="buscador" action="/" method="get" role="search" aria-label="Buscar locaciones">
+    <label for="consulta-locacion">Buscar locaciones</label>
+    <div class="acciones">
+      <input type="search" id="consulta-locacion" name="q" th:value="${consulta}" maxlength="120"
+             placeholder="Nombre o palabra de la reseña">
+      <input type="hidden" name="anterior" th:value="${filtroActivo}">
+      <button type="submit">Buscar</button>
+      <a class="boton secundario" th:if="${!filtroActivo.isBlank()}" href="/">Limpiar filtro</a>
+    </div>
+  </form>
+  <p class="aviso error aviso-busqueda" role="alert" th:if="${sinCoincidencias}">
+    No se encontraron locaciones que coincidan con la búsqueda
+  </p>
   <section class="explorador" aria-label="Explorar por locación">
     <div class="mapa-panel" data-mapa th:attr="data-key=${mapaClave},data-map-id=${mapaId}" hidden>
       <div class="mapa" aria-label="Mapa interactivo de locaciones"></div>
@@ -36,15 +49,32 @@
     <p th:replace="~{pantallas :: coordenadas(${locacion})}"></p>
     <h1 th:text="${locacion.nombre}"></h1>
     <p th:text="${locacion.descripcion}"></p>
-    <a class="boton secundario" th:href="@{/aportar(locacion=${locacion.id})}">Aportar a esta locación</a>
+    <div class="acciones">
+      <a class="boton secundario" th:href="@{/aportar(locacion=${locacion.id})}">Aportar a esta locación</a>
+      <a class="boton secundario" th:unless="${cronologia.empty}" href="#cronologia">Ver línea del tiempo</a>
+      <a class="boton secundario" th:unless="${documentos.empty}"
+         th:href="@{/locaciones/{id}/archivo.zip(id=${locacion.id})}">Descargar archivo ZIP</a>
+    </div>
   </header>
+  <p class="aviso" th:if="${cronologia.empty}">
+    Esta locación aún no cuenta con suficientes documentos fechados para generar una cronología
+  </p>
+  <section class="cronologia" id="cronologia" aria-labelledby="titulo-cronologia" th:unless="${cronologia.empty}">
+    <h2 id="titulo-cronologia">Línea del tiempo</h2>
+    <ol>
+      <li th:each="doc : ${cronologia}">
+        <time class="coordenadas" th:text="${doc.fechaHistorica}" th:attr="datetime=${doc.fechaHistorica}"></time>
+        <a th:href="@{/documentos/{id}(id=${doc.id})}" th:text="${doc.titulo}"></a>
+      </li>
+    </ol>
+  </section>
   <section aria-labelledby="documentos">
     <h2 id="documentos">Documentos del archivo</h2>
     <ul class="documentos" th:unless="${documentos.empty}">
       <li class="documento" th:each="doc : ${documentos}">
         <div>
-          <h3 th:text="${doc.titulo}"></h3>
-          <p th:text="${doc.descripcion}"></p>
+          <h3><a th:href="@{/documentos/{id}(id=${doc.id})}" th:text="${doc.titulo}"></a></h3>
+          <p th:text="${doc.resumen()}"></p>
           <p class="coordenadas" th:if="${doc.fechaHistorica}" th:text="${doc.fechaHistorica}"></p>
         </div>
         <a class="boton secundario" th:href="${doc.referenciaDescarga()}" th:text="|Descargar ${doc.nombreOriginal}|"></a>
@@ -52,6 +82,20 @@
     </ul>
     <p th:if="${documentos.empty}">Esta locación aún no tiene documentos publicados.</p>
   </section>
+</th:block>
+
+<th:block th:fragment="documento">
+  <a class="enlace-volver" th:href="@{/locaciones/{id}(id=${locacion.id})}" th:text="|Volver a ${locacion.nombre}|"></a>
+  <header class="encabezado compacto">
+    <p class="coordenadas" th:if="${documento.fechaHistorica}" th:text="${documento.fechaHistorica}"></p>
+    <h1 th:text="${documento.titulo}"></h1>
+  </header>
+  <p th:replace="~{pantallas :: aviso}"></p>
+  <p class="texto-vinculado"><th:block th:each="segmento : ${segmentos}"><span th:unless="${segmento.destino}"
+      th:text="${segmento.texto}"></span><a th:if="${segmento.destino}"
+      th:href="@{/documentos/{id}/vinculo(id=${documento.id},destino=${segmento.destino})}"
+      th:text="${segmento.texto}"></a></th:block></p>
+  <a class="boton secundario" th:href="${documento.referenciaDescarga()}" th:text="|Descargar ${documento.nombreOriginal}|"></a>
 </th:block>
 
 <th:block th:fragment="locacionAusente">
@@ -114,6 +158,10 @@
     <h1>Propuestas ciudadanas</h1>
     <form action="/administracion/salir" method="post"><button class="secundario" type="submit">Cerrar sesión</button></form>
   </div>
+  <nav class="acciones gestion" aria-label="Gestión del archivo">
+    <a class="boton secundario" href="/administracion/locaciones/nueva">Registrar locación</a>
+    <a class="boton secundario" href="/administracion/documentos/nuevo">Publicar documento</a>
+  </nav>
   <ul class="documentos" th:unless="${propuestas.empty}">
     <li class="documento" th:each="aporte : ${propuestas}" th:with="ficha=|/administracion/propuestas/${aporte.folio}|">
       <div>
@@ -128,6 +176,78 @@
     </li>
   </ul>
   <p th:if="${propuestas.empty}">Aún no se han recibido propuestas.</p>
+</th:block>
+
+<th:block th:fragment="altaLocacion">
+  <a class="enlace-volver" href="/administracion/propuestas">Volver a administración</a>
+  <header class="encabezado compacto"><h1>Registrar locación</h1></header>
+  <form class="formulario" action="/administracion/locaciones/nueva" method="post">
+    <label>Nombre
+      <input name="nombre" maxlength="160" th:value="${valores['nombre']}" required
+             th:attr="aria-invalid=${errores['nombre'] != null},aria-describedby=${errores['nombre'] != null ? 'error-nombre' : null}">
+      <small th:replace="~{pantallas :: errorCampo('nombre',${errores['nombre']})}"></small>
+    </label>
+    <label>Descripción
+      <textarea name="descripcion" maxlength="2000" rows="4" th:text="${valores['descripcion']}" required
+                th:attr="aria-invalid=${errores['descripcion'] != null},aria-describedby=${errores['descripcion'] != null ? 'error-descripcion' : null}"></textarea>
+      <small th:replace="~{pantallas :: errorCampo('descripcion',${errores['descripcion']})}"></small>
+    </label>
+    <div class="coordenadas-formulario">
+      <label>Latitud
+        <input name="latitud" type="number" min="-90" max="90" step="any" th:value="${valores['latitud']}" required
+               th:attr="aria-invalid=${errores['latitud'] != null},aria-describedby=${errores['latitud'] != null ? 'error-latitud' : null}">
+        <small th:replace="~{pantallas :: errorCampo('latitud',${errores['latitud']})}"></small>
+      </label>
+      <label>Longitud
+        <input name="longitud" type="number" min="-180" max="180" step="any" th:value="${valores['longitud']}" required
+               th:attr="aria-invalid=${errores['longitud'] != null},aria-describedby=${errores['longitud'] != null ? 'error-longitud' : null}">
+        <small th:replace="~{pantallas :: errorCampo('longitud',${errores['longitud']})}"></small>
+      </label>
+    </div>
+    <button type="submit">Registrar locación</button>
+  </form>
+</th:block>
+
+<th:block th:fragment="publicarDocumento">
+  <a class="enlace-volver" href="/administracion/propuestas">Volver a administración</a>
+  <header class="encabezado compacto"><h1>Publicar documento</h1></header>
+  <p th:if="${locaciones.empty}">Registra una locación antes de publicar un documento.</p>
+  <form class="formulario" action="/administracion/documentos/nuevo" method="post" enctype="multipart/form-data"
+        th:unless="${locaciones.empty}">
+    <label>Locación
+      <select name="locacion" required
+              th:attr="aria-invalid=${errores['locacion'] != null},aria-describedby=${errores['locacion'] != null ? 'error-locacion' : null}">
+        <option value="">Elige una locación</option>
+        <option th:each="l : ${locaciones}" th:value="${l.id}" th:text="${l.nombre}"
+                th:selected="${valores['locacion'] == l.id.toString()}"></option>
+      </select>
+      <small th:replace="~{pantallas :: errorCampo('locacion',${errores['locacion']})}"></small>
+    </label>
+    <label>Título
+      <input name="titulo" maxlength="240" th:value="${valores['titulo']}" required
+             th:attr="aria-invalid=${errores['titulo'] != null},aria-describedby=${errores['titulo'] != null ? 'error-titulo' : null}">
+      <small th:replace="~{pantallas :: errorCampo('titulo',${errores['titulo']})}"></small>
+    </label>
+    <label>Año o fecha histórica
+      <input name="fecha" maxlength="10" th:value="${valores['fecha']}" required
+             th:attr="aria-invalid=${errores['fecha'] != null},aria-describedby=${errores['fecha'] != null ? 'error-fecha ayuda-fecha' : 'ayuda-fecha'}">
+      <small id="ayuda-fecha">AAAA, AAAA-MM o AAAA-MM-DD.</small>
+      <small th:replace="~{pantallas :: errorCampo('fecha',${errores['fecha']})}"></small>
+    </label>
+    <label>Descripción
+      <textarea name="descripcion" maxlength="2000" rows="4" th:text="${valores['descripcion']}" required
+                th:attr="aria-invalid=${errores['descripcion'] != null},aria-describedby=${errores['descripcion'] != null ? 'error-descripcion ayuda-vinculo' : 'ayuda-vinculo'}"></textarea>
+      <small id="ayuda-vinculo" th:text="${'Para añadir un enlace interno, escribe [Texto](/locaciones/1) o [Texto](/documentos/1).'}"></small>
+      <small th:replace="~{pantallas :: errorCampo('descripcion',${errores['descripcion']})}"></small>
+    </label>
+    <label>Archivo original
+      <input name="archivo" type="file" accept=".jpg,.png,.webp,.pdf" required
+             th:attr="aria-invalid=${errores['archivo'] != null},aria-describedby=${errores['archivo'] != null ? 'error-archivo ayuda-archivo' : 'ayuda-archivo'}">
+      <small id="ayuda-archivo">JPG, PNG, WebP o PDF de hasta 25 MB.</small>
+      <small th:replace="~{pantallas :: errorCampo('archivo',${errores['archivo']})}"></small>
+    </label>
+    <button type="submit">Publicar documento</button>
+  </form>
 </th:block>
 
 <th:block th:fragment="propuesta">
@@ -170,6 +290,8 @@
 
 <a th:fragment="enlaceMapa" class="enlace-volver" href="/">Volver al mapa y catálogo</a>
 <p th:fragment="aviso" th:if="${mensaje}" class="aviso error" role="alert" th:text="${mensaje}"></p>
+<small th:fragment="errorCampo(campo, mensajeCampo)" th:if="${mensajeCampo != null}" class="campo-error" role="alert"
+       th:id="|error-${campo}|" th:text="${mensajeCampo}"></small>
 <p th:fragment="coordenadas(l)" class="coordenadas"
    th:text="|${#numbers.formatDecimal(l.latitud, 1, 5, 'POINT')}, ${#numbers.formatDecimal(l.longitud, 1, 5, 'POINT')}|"></p>
 <span th:fragment="etiquetaEstado(valor)" class="estado" th:classappend="${valor.toLowerCase()}" th:text="${valor}"></span>

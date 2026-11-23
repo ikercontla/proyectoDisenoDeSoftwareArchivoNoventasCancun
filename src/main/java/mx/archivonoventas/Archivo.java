@@ -73,7 +73,7 @@ public class Archivo {
         String insertar = "INSERT INTO locaciones (nombre, descripcion, latitud, longitud) VALUES (?, ?, ?, ?)";
         long id = db.queryForObject(insertar + " RETURNING id", Long.class, "Parque de las Palapas",
                 "Locación de demostración para consultar una ficha de ejemplo y descargar su original.", 21.16132, -86.82869);
-        db.update(insertar, "Palacio Municipal",
+        long municipio = db.queryForObject(insertar + " RETURNING id", Long.class, "Palacio Municipal",
                 "Locación de demostración para explorar el mapa y enviar un aporte ciudadano.", 21.16185, -86.82572);
         byte[] pdf;
         try (var fuente = new ClassPathResource("ficha-de-demostracion.pdf").getInputStream()) {
@@ -83,9 +83,14 @@ public class Archivo {
         }
         String nombre = "ficha-de-demostracion.pdf";
         long binario = guardarOriginal(nombre, "application/pdf", pdf);
-        incorporar(new Documento(0, id, binario, "Ficha de demostración",
-                "Documento de muestra para verificar la consulta y descarga del archivo.",
-                null, "application/pdf", nombre), null);
+        long primeraFicha = incorporar(new Documento(0, id, binario, "Ficha de demostración",
+                "Documento de muestra. Explora también [Palacio Municipal](/locaciones/" + municipio + ").",
+                "1995", "application/pdf", nombre), null);
+        String nombreComplementario = "nota-de-demostracion.pdf";
+        long complementario = guardarOriginal(nombreComplementario, "application/pdf", pdf);
+        incorporar(new Documento(0, id, complementario, "Nota de demostración",
+                "Segundo documento de muestra para la cronología. Consulta la [ficha de demostración](/documentos/" +
+                        primeraFicha + ").", "1998-03", "application/pdf", nombreComplementario), null);
     }
 
     private static Locacion leerLocacion(ResultSet fila, int indice) throws SQLException {

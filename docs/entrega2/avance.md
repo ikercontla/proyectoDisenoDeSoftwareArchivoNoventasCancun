@@ -2,7 +2,7 @@
 
 Equipo 03 · Diseño de Software · 22 de noviembre de 2026
 
-La [primera implementación en Java](../../README.md) ya se puede ejecutar en local. Su [registro de verificación](verificacion-v1.md) incluye los resultados iniciales de la suite y la validación pendiente con el proveedor de mapas.
+La etiqueta [`base-must`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/base-must) conserva la primera implementación Java con RF-01 a RF-06. En esta rama se implementaron RF-07 a RF-12 como ampliación funcional. Los resultados y la validación pendiente con el proveedor de mapas figuran en el [registro de verificación](verificacion-v1.md).
 
 ## Punto de partida
 

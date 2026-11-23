@@ -2,8 +2,10 @@ package mx.archivonoventas;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -14,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.zip.ZipInputStream;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +38,8 @@ import org.springframework.test.context.DynamicPropertySource;
 class AceptacionTest {
     private static final String ADMIN = "/administracion";
     private static final String PANEL = ADMIN + "/propuestas";
+    private static final String ALTA_LOCACION = ADMIN + "/locaciones/nueva";
+    private static final String PUBLICAR_DOCUMENTO = ADMIN + "/documentos/nuevo";
     private static final String CLAVE = "Cuenta de prueba 1995";
     private static final String LIMITE_MULTIPART = "ArchivoNoventas-Prueba";
     private static final byte[] PDF = leerPdf();
@@ -213,6 +219,200 @@ class AceptacionTest {
         assertThat(entrar("cuenta-anterior", "Contraseña previa 1995").statusCode()).isEqualTo(303);
     }
 
+    @Test
+    @DisplayName("V-07a · la cronología ordena fechas parciales y completas")
+    void lineaDelTiempo() throws Exception {
+        long locacion = locacionPrueba("Cronología de prueba");
+        documentoPrueba(locacion, "Segundo hito", "1999-02", "segundo.pdf", "Texto.");
+        documentoPrueba(locacion, "Primer hito", "1995", "primero.pdf", "Texto.");
+        documentoPrueba(locacion, "Sin fecha visible en el archivo", null, "sin-fecha.pdf", "Texto.");
+        String pagina = texto(get("/locaciones/" + locacion));
+        assertThat(pagina).contains("Ver línea del tiempo", "id=\"cronologia\"");
+        String linea = pagina.substring(pagina.indexOf("id=\"cronologia\""), pagina.indexOf("aria-labelledby=\"documentos\""));
+        assertThat(linea).contains("Primer hito", "Segundo hito", "1995", "1999-02").doesNotContain("Sin fecha");
+        assertThat(linea.indexOf("Primer hito")).isLessThan(linea.indexOf("Segundo hito"));
+    }
+
+    @Test
+    @DisplayName("V-07b · la cronología se oculta si las fechas no son suficientes")
+    void cronologiaInsuficiente() throws Exception {
+        long locacion = locacionPrueba("Cronología insuficiente");
+        String ruta = "/locaciones/" + locacion;
+        for (String fecha : new String[] {"1995", "1995-01-01", null}) {
+            String pagina = texto(get(ruta));
+            assertThat(pagina).contains("Esta locación aún no cuenta con suficientes documentos fechados para generar una cronología")
+                    .doesNotContain("Ver línea del tiempo", "id=\"cronologia\"");
+            if (fecha != null) documentoPrueba(locacion, "Hito " + fecha, fecha, "hito.pdf", "Texto.");
+        }
+    }
+
+    @Test
+    @DisplayName("V-08a · el ZIP contiene todos los originales y conserva sus nombres")
+    void zipDeOriginales() throws Exception {
+        long locacion = locacionPrueba("Archivo para ZIP");
+        documentoPrueba(locacion, "Original", "1994", "ficha histórica.pdf", "Texto.");
+        documentoPrueba(locacion, "Homónimo", "1995", "ficha histórica.pdf", "Texto.");
+        var r = get("/locaciones/" + locacion + "/archivo.zip");
+        assertThat(r.statusCode()).isEqualTo(200);
+        assertThat(cabecera(r, "Content-Type")).isEqualTo("application/zip");
+        assertThat(cabecera(r, "Content-Disposition")).contains("attachment", ".zip");
+        try (var zip = new ZipInputStream(new ByteArrayInputStream(r.body()))) {
+            assertThat(zip.getNextEntry().getName()).isEqualTo("ficha histórica.pdf");
+            assertThat(zip.readAllBytes()).isEqualTo(PDF);
+            assertThat(zip.getNextEntry().getName()).isEqualTo("ficha histórica (2).pdf");
+            assertThat(zip.readAllBytes()).isEqualTo(PDF);
+            assertThat(zip.getNextEntry()).isNull();
+        }
+    }
+
+    @Test
+    @DisplayName("V-08b · el ZIP se permite en 100 MB y se rechaza si el total los excede")
+    void limiteZip() throws Exception {
+        long locacion = locacionPrueba("Límite ZIP");
+        String ruta = "/locaciones/" + locacion + "/archivo.zip";
+        assertThat(get(ruta).statusCode()).isEqualTo(422);
+        long blob = db.queryForObject("""
+                INSERT INTO binarios(nombre,tipo,contenido) VALUES ('grande.pdf','application/pdf',zeroblob(25000000))
+                RETURNING id
+                """, Long.class);
+        for (int i = 0; i < 4; i++) insertarDocumento(locacion, blob, "Parte " + i, null, "Texto.");
+        var r = get(ruta);
+        assertThat(r.statusCode()).isEqualTo(200);
+        long total = 0;
+        try (var zip = new ZipInputStream(new ByteArrayInputStream(r.body()))) {
+            while (zip.getNextEntry() != null) total += zip.transferTo(OutputStream.nullOutputStream());
+        }
+        assertThat(total).isEqualTo(100_000_000L);
+        documentoPrueba(locacion, "Un original adicional", "1998", "otro.pdf", "Texto.");
+        var rechazo = get(ruta);
+        assertThat(rechazo.statusCode()).isEqualTo(422);
+        assertThat(rechazo.headers().firstValue("Content-Disposition")).isEmpty();
+        assertThat(texto(rechazo)).contains(PaquetesZip.MENSAJE_LIMITE);
+    }
+
+    @Test
+    @DisplayName("V-09a · un administrador registra una locación visible en el mapa")
+    void registrarLocacion() throws Exception {
+        assertThat(cabecera(get(ALTA_LOCACION), "Location")).isEqualTo(ADMIN);
+        String sesion = iniciarSesion();
+        assertThat(texto(get(ALTA_LOCACION, sesion))).contains("Registrar locación");
+        var r = post(ALTA_LOCACION, "nombre=Glorieta+de+Prueba&descripcion=Sitio+de+prueba&latitud=21.173&longitud=-86.821", sesion);
+        assertThat(r.statusCode()).isEqualTo(303);
+        assertThat(texto(get(cabecera(r, "Location")))).contains("Glorieta de Prueba", "21.17300, -86.82100");
+        assertThat(texto(get("/"))).contains("Glorieta de Prueba", "data-lat=\"21.173\"", "data-lng=\"-86.821\"");
+    }
+
+    @Test
+    @DisplayName("V-09b · se resaltan nombre duplicado y coordenadas fuera de rango")
+    void locacionInvalida() throws Exception {
+        String sesion = iniciarSesion();
+        int antes = db.queryForObject("SELECT COUNT(*) FROM locaciones", Integer.class);
+        var r = post(ALTA_LOCACION, "nombre=" + encode("LOCACIÓN PÚBLICA")
+                + "&descripcion=Texto&latitud=91&longitud=-181", sesion);
+        assertThat(r.statusCode()).isEqualTo(422);
+        assertThat(texto(r)).contains("Ya existe una locación con ese nombre.", "error-nombre", "error-latitud",
+                "error-longitud", "aria-invalid=\"true\"");
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM locaciones", Integer.class)).isEqualTo(antes);
+    }
+
+    @Test
+    @DisplayName("V-10a · la publicación directa incorpora y descarga el documento")
+    void publicarDocumento() throws Exception {
+        long locacion = locacionPrueba("Publicación directa");
+        assertThat(cabecera(get(PUBLICAR_DOCUMENTO), "Location")).isEqualTo(ADMIN);
+        String sesion = iniciarSesion();
+        assertThat(texto(get(PUBLICAR_DOCUMENTO, sesion))).contains("Año o fecha histórica");
+        var r = multipart(PUBLICAR_DOCUMENTO, Map.of("locacion", Long.toString(locacion), "titulo", "Ficha publicada",
+                "fecha", "1997", "descripcion", "Texto de publicación"), "original.pdf", PDF, sesion);
+        assertThat(r.statusCode()).isEqualTo(303);
+        String documento = cabecera(r, "Location");
+        assertThat(texto(get(documento))).contains("Ficha publicada", "Texto de publicación", "1997");
+        assertThat(texto(get("/locaciones/" + locacion))).contains("Ficha publicada", documento);
+        assertThat(get(documento + "/original").body()).isEqualTo(PDF);
+    }
+
+    @Test
+    @DisplayName("V-10b · publicar sin locación o año no crea documentos ni binarios")
+    void publicacionIncompleta() throws Exception {
+        String sesion = iniciarSesion();
+        int documentos = db.queryForObject("SELECT COUNT(*) FROM documentos", Integer.class);
+        int binarios = db.queryForObject("SELECT COUNT(*) FROM binarios", Integer.class);
+        var r = multipart(PUBLICAR_DOCUMENTO, Map.of("titulo", "Sin año", "descripcion", "Texto"),
+                "original.pdf", PDF, sesion);
+        assertThat(r.statusCode()).isEqualTo(422);
+        assertThat(texto(r)).contains("Selecciona una locación activa.", "Indica el año de procedencia.",
+                "error-locacion", "error-fecha");
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM documentos", Integer.class)).isEqualTo(documentos);
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM binarios", Integer.class)).isEqualTo(binarios);
+    }
+
+    @Test
+    @DisplayName("V-11a · los enlaces internos llevan a una locación o a otro documento")
+    void enlacesInternos() throws Exception {
+        long destino = locacionPrueba("Destino de enlace");
+        long vinculado = documentoPrueba(destino, "Archivo relacionado", "1992", "destino.pdf", "Texto.");
+        long documento = documentoPrueba(1, "Fuente de enlaces", null, "fuente.pdf",
+                "Consulta [la locación](/locaciones/" + destino + ") y [el documento](/documentos/" + vinculado + ").");
+        String ruta = "/documentos/" + documento;
+        assertThat(texto(get(ruta))).contains("la locación</a>", "el documento</a>", ruta + "/vinculo")
+                .doesNotContain("[la locación]");
+        assertThat(cabecera(get(ruta + "/vinculo?destino=locaciones%2F" + destino), "Location"))
+                .isEqualTo("/locaciones/" + destino);
+        assertThat(cabecera(get(ruta + "/vinculo?destino=documentos%2F" + vinculado), "Location"))
+                .isEqualTo("/documentos/" + vinculado);
+    }
+
+    @Test
+    @DisplayName("V-11b · un enlace a un destino inactivo vuelve al documento con un aviso")
+    void enlaceInactivo() throws Exception {
+        long documento = documentoPrueba(1, "Fuente con destino inactivo", null, "fuente.pdf",
+                "[Locación retirada](/locaciones/3)");
+        String ruta = "/documentos/" + documento;
+        var r = get(ruta + "/vinculo?destino=locaciones%2F3");
+        assertThat(r.statusCode()).isEqualTo(303);
+        assertThat(cabecera(r, "Location")).isEqualTo(ruta + "?vinculo=ausente");
+        assertThat(texto(get(cabecera(r, "Location")))).contains("El recurso vinculado ya no se encuentra disponible",
+                "Fuente con destino inactivo");
+    }
+
+    @Test
+    @DisplayName("V-12a · filtrar por nombre o reseña cambia el conjunto de marcadores")
+    void buscarLocaciones() throws Exception {
+        assertThat(texto(get("/?q=publica"))).contains("Locación pública</a>", "data-lat=\"21.16\"")
+                .doesNotContain("Segunda locación</a>");
+        assertThat(texto(get("/?q=otra+resena"))).contains("Segunda locación</a>", "data-lat=\"21.19\"")
+                .doesNotContain("Locación pública</a>");
+    }
+
+    @Test
+    @DisplayName("V-12b · buscar sin coincidencias conserva el filtro anterior")
+    void conservarFiltro() throws Exception {
+        String pagina = texto(get("/?q=SinCoincidencias&anterior=Segunda"));
+        assertThat(pagina).contains("No se encontraron locaciones que coincidan con la búsqueda",
+                "Segunda locación</a>", "data-lat=\"21.19\"").doesNotContain("Locación pública</a>");
+    }
+
+    private long locacionPrueba(String nombre) {
+        return db.queryForObject("""
+                INSERT INTO locaciones (nombre,descripcion,latitud,longitud) VALUES (?,'Locación de prueba.',21.5,-87)
+                RETURNING id
+                """, Long.class, nombre);
+    }
+
+    private long documentoPrueba(long locacion, String titulo, String fecha, String nombre, String descripcion) {
+        long binario = db.queryForObject("""
+                INSERT INTO binarios (nombre,tipo,contenido) VALUES (?,'application/pdf',?) RETURNING id
+                """, Long.class, nombre, PDF);
+        return insertarDocumento(locacion, binario, titulo, fecha, descripcion);
+    }
+
+    private long insertarDocumento(long locacion, long binario, String titulo, String fecha, String descripcion) {
+        return db.queryForObject("""
+                INSERT INTO documentos (locacion_id,binario_id,titulo,fecha_historica,descripcion)
+                VALUES (?,?,?,?,?) RETURNING id
+                """, Long.class, locacion, binario, titulo, fecha, descripcion);
+    }
+
     private String estado(String folio) {
         return db.queryForObject("SELECT estado FROM propuestas WHERE folio = ?", String.class, folio);
     }
@@ -247,10 +447,15 @@ class AceptacionTest {
     }
 
     private HttpResponse<byte[]> multipart(String nombre, byte[] contenido) throws Exception {
+        return multipart("/aportar", Map.of("locacion", "1", "descripcion", "Aporte de prueba"), nombre, contenido, null);
+    }
+
+    private HttpResponse<byte[]> multipart(String ruta, Map<String, String> campos, String nombre, byte[] contenido, String sesion)
+            throws Exception {
         var cuerpo = new ByteArrayOutputStream();
-        for (String[] campo : new String[][] {{"locacion", "1"}, {"descripcion", "Aporte de prueba"}}) {
-            cuerpo.writeBytes(("--" + LIMITE_MULTIPART + "\r\nContent-Disposition: form-data; name=\"" + campo[0] +
-                    "\"\r\n\r\n" + campo[1] + "\r\n").getBytes(StandardCharsets.UTF_8));
+        for (var campo : campos.entrySet()) {
+            cuerpo.writeBytes(("--" + LIMITE_MULTIPART + "\r\nContent-Disposition: form-data; name=\"" + campo.getKey() +
+                    "\"\r\n\r\n" + campo.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
         }
         if (nombre != null) {
             cuerpo.writeBytes(("--" + LIMITE_MULTIPART + "\r\nContent-Disposition: form-data; name=\"archivo\"; filename=\"" +
@@ -259,7 +464,7 @@ class AceptacionTest {
             cuerpo.writeBytes("\r\n".getBytes(StandardCharsets.UTF_8));
         }
         cuerpo.writeBytes(("--" + LIMITE_MULTIPART + "--\r\n").getBytes(StandardCharsets.UTF_8));
-        return CLIENTE.send(solicitud("/aportar", null)
+        return CLIENTE.send(solicitud(ruta, sesion)
                 .header("Content-Type", "multipart/form-data; boundary=" + LIMITE_MULTIPART)
                 .POST(HttpRequest.BodyPublishers.ofByteArray(cuerpo.toByteArray())).build(), HttpResponse.BodyHandlers.ofByteArray());
     }
