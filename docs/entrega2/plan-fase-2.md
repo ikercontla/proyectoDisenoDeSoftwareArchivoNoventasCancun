@@ -14,7 +14,7 @@ El punto de partida es [`v1-antes`](https://github.com/ikercontla/proyectoDiseno
 | R-04 | H-05, OCP | Extract Function · Composición de métodos | Extraer una función de consulta del catálogo de formatos. Alimentar desde ese catálogo la validación de extensiones y las opciones de ambos formularios. Mantener la lista actual, las verificaciones de firma y los mensajes. | V-03a/b, V-04a/b y V-10a/b. Comparar el atributo `accept` en ambos formularios y probar un contenido incompatible. |
 | R-05 | H-03, SRP | Extract Class | Extraer de `Pantallas` el controlador de alta de locaciones y publicación directa. Conservar rutas, filtros de sesión, formularios, códigos HTTP y redirecciones. | V-02a/b, V-05a/b, V-06a/b, V-09a/b y V-10a/b. Comprobar que usuarios anónimos se redirigen al acceso. |
 
-Los identificadores y cambios son propuestas para la bitácora. El orden coloca primero el proveedor externo y luego los ajustes que usan `Adjunto` y el formato de fecha. [Catálogo de técnicas de Fowler](https://refactoring.com/catalog/) · [Extract Function](https://refactoring.com/catalog/extractFunction.html) · [Replace Primitive with Object](https://refactoring.com/catalog/replacePrimitiveWithObject.html)
+La [bitácora](bitacora-refactorizacion.md) registra los cambios aplicados y su evidencia. El orden coloca primero el proveedor externo y luego los ajustes que usan `Adjunto` y el formato de fecha. [Catálogo de técnicas de Fowler](https://refactoring.com/catalog/) · [Extract Function](https://refactoring.com/catalog/extractFunction.html) · [Replace Primitive with Object](https://refactoring.com/catalog/replacePrimitiveWithObject.html)
 
 ## Verificación y evidencia por cambio
 
