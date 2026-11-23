@@ -2,9 +2,11 @@
 
 Equipo 03 · Diseño de Software · 22 de noviembre de 2026
 
+La [primera implementación](../../README.md) ya se puede ejecutar en local. Su [registro de verificación](verificacion-v1.md) incluye los resultados iniciales de la suite y la validación pendiente con el proveedor de mapas.
+
 ## Punto de partida
 
-La revisión parte del commit [`168d357`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/168d357756eb0f3ed8c1f8f5ee4930ea2570f105) de la Entrega 1. Las ramas `main` y `revision-uml` contienen el SRS, las tarjetas CRC y el diagrama conceptual. Falta ubicar una versión ejecutable con RF-01 a RF-06 para registrar `v1-antes` y obtener evidencia del comportamiento inicial.
+La revisión parte del commit [`168d357`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/168d357756eb0f3ed8c1f8f5ee4930ea2570f105) de la Entrega 1. El SRS, las tarjetas CRC y el diagrama conceptual de esa revisión orientaron la implementación de los seis Must. La validación inicial con el proveedor real de mapas sigue pendiente antes de registrar `v1-antes`.
 
 ## Casos de verificación preparados
 
@@ -25,7 +27,7 @@ Usar el mismo conjunto de datos antes y después. Como datos de prueba, preparar
 | V-06a | Aprobar como administrador una propuesta `Revisada`. | Pasa a `Aprobada`, se crea un documento público y aparece en el archivo de la locación correspondiente. | Estado antes y después, ID del documento y galería pública. |
 | V-06b | Intentar rechazar otra propuesta `Revisada` con el motivo vacío. | Permanece `Revisada` y se muestra «Debe ingresar obligatoriamente una justificación para rechazar la propuesta». | Mensaje y estado de la propuesta. |
 
-Queda pendiente ejecutar los 12 casos antes y después. Si el diagnóstico alcanza RF-07 a RF-12, incorporar los casos correspondientes del SRS y ejecutarlos sobre la versión inicial antes de aplicar el cambio.
+Los resultados de la primera ejecución están en el [registro de verificación](verificacion-v1.md). Si el diagnóstico alcanza RF-07 a RF-12, incorporar los casos correspondientes del SRS y ejecutarlos sobre la versión inicial antes de aplicar el cambio.
 
 [Criterios de aceptación del SRS](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion5_requerimientos_funcionales.md) · [Reglas de negocio](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion6_reglas_negocio.md) · [Requerimientos no funcionales](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion7_requerimientos_no_funcionales.md)
 
@@ -51,7 +53,7 @@ Las tarjetas CRC de la Entrega 1 identifican `PropuestaAporte`, `Archivo` y `Doc
 - **CBO**. Listar las clases que usa y las clases que la usan. Anotar para cada vínculo el atributo, firma, creación o llamada que lo demuestra. Unir ambos grupos y contar cada clase una sola vez. Excluir tipos de la biblioteca estándar, excepciones y enumeraciones.
 - **LCOM**. Listar los métodos con los atributos propios que usa cada uno. Excluir constructores, getters y setters. Formar las `n(n−1)/2` parejas y marcar cada una como `P` si no comparte atributos o `Q` si comparte al menos uno. Verificar que `P + Q = n(n−1)/2` y calcular `máx(0, P − Q)`.
 
-Los cálculos iniciales quedan pendientes hasta identificar las clases implementadas, sus referencias y los cuerpos de sus métodos. Repetir el cálculo con el mismo criterio sobre las mismas tres clases en la versión final.
+La implementación de las tres clases se encuentra en [`src/dominio.mjs`](../../src/dominio.mjs). Queda pendiente registrar los cálculos iniciales y repetirlos con el mismo criterio en la versión refactorizada.
 
 ## Secuencia de la entrega
 

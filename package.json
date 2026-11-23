@@ -1,0 +1,13 @@
+{
+  "name": "archivo-noventas-cancun",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "start": "node src/servidor.mjs",
+    "demo": "node src/preparar.mjs demo",
+    "admin": "node src/preparar.mjs admin",
+    "test": "node --test"
+  }
+}
