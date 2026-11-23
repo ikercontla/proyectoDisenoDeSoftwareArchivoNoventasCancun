@@ -2,11 +2,11 @@
 
 Equipo 03 · Diseño de Software · 22 de noviembre de 2026
 
-La etiqueta [`base-must`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/base-must) conserva la primera implementación Java con RF-01 a RF-06. En esta rama se implementaron RF-07 a RF-12 como ampliación funcional. Los resultados y la validación pendiente con el proveedor de mapas figuran en el [registro de verificación](verificacion-v1.md).
+La etiqueta [`base-must`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/base-must) conserva la primera implementación Java con RF-01 a RF-06. La etiqueta [`v1-antes`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/v1-antes) fija la revisión con RF-01 a RF-12 para la comparación de la Entrega 2. [Resultados de verificación](verificacion-v1.md)
 
 ## Punto de partida
 
-La revisión parte del commit [`168d357`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/168d357756eb0f3ed8c1f8f5ee4930ea2570f105) de la Entrega 1. El SRS, las tarjetas CRC y el diagrama conceptual de esa revisión orientaron la implementación de los seis Must. La validación inicial con el proveedor real de mapas sigue pendiente antes de registrar `v1-antes`.
+La revisión parte del commit [`168d357`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/168d357756eb0f3ed8c1f8f5ee4930ea2570f105) de la Entrega 1. El SRS, las tarjetas CRC y el diagrama conceptual orientaron la implementación Java. La prueba con el proveedor real de mapas sigue pendiente y los dos casos del mapa ya se verificaron con simulación sobre el commit inicial.
 
 ## Casos de verificación preparados
 
@@ -31,35 +31,15 @@ Los resultados de la primera ejecución están en el [registro de verificación]
 
 [Criterios de aceptación del SRS](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion5_requerimientos_funcionales.md) · [Reglas de negocio](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion6_reglas_negocio.md) · [Requerimientos no funcionales](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion7_requerimientos_no_funcionales.md)
 
-## Candidatos para el diagnóstico
+## Diagnóstico y métricas iniciales
 
-Los puntos siguientes proceden del diseño conceptual. Para convertir cada uno en hallazgo, registrar la clase, el método o import y la línea exacta del código ejecutable. Estimar cuántas clases habría que tocar y contrastar la probabilidad de cambio con los supuestos de la Entrega 1 antes de elegir cuatro hallazgos.
-
-| Qué inspeccionar | Riesgo a comprobar | Cambio que serviría para evaluar impacto |
-|---|---|---|
-| `Archivo`. La CRC reúne la colección, la cronología y la generación de ZIP. | Baja cohesión y SRP si el código mezcla la gestión de documentos con los detalles de compresión. | SUP-03. Aumento del número de documentos por locación. |
-| `PropuestaAporte`. El UML describe una aprobación que crea un documento y lo incorpora al archivo. | Baja cohesión y SRP si la misma clase gestiona la transición de estado y la persistencia o publicación concreta. | SUP-04. Cambio de la política de conservación del aporte. |
-| Pantalla de mapa y carga de la API externa. | Alto acoplamiento y DIP si la pantalla o la lógica de catálogo usan directamente tipos, eventos o inicialización de Google Maps. | DEP-01. Sustitución del proveedor por problemas recurrentes de cuota o disponibilidad. |
-| Carga de aportes y descarga de originales (RF-03, RF-04). | Alto acoplamiento si varios componentes dependen de rutas locales o del mismo mecanismo concreto de almacenamiento. | DEP-02. Migración de volumen local a almacenamiento externo. |
-| `Documento` y `DocumentoPDF`. El UML permite que preparen descargas y validen su contenido. | LSP si algún consumidor acepta un `Documento`, pero al recibir un `DocumentoPDF` presupone que hay imágenes o texto separado, o si la subclase rompe el contrato común. | Aplicar las mismas verificaciones de consulta y descarga a ambos tipos de publicación. |
-| Validación de formato en aportes, imágenes y PDF. | OCP si agregar un formato obliga a editar varios condicionales dispersos. | SUP-02. Admisión futura de formatos con mayor volumen. |
-
-[Tarjetas CRC](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/diseno/diseno_conceptual.md#42-tarjetas-crc-de-las-clases-principales) · [UML conceptual](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/diagramas/Equipo3_Entrega1_DiagramaClases.puml) · [Supuestos y dependencias](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/168d357756eb0f3ed8c1f8f5ee4930ea2570f105/docs/srs/seccion4_supuestos_dependencias.md)
-
-## Métricas iniciales
-
-Las tarjetas CRC de la Entrega 1 identifican `PropuestaAporte`, `Archivo` y `Documento` como las clases a medir. Aplicar ambos cálculos al código de `v1-antes`.
-
-- **CBO**. Listar las clases que usa y las clases que la usan. Anotar para cada vínculo el atributo, firma, creación o llamada que lo demuestra. Unir ambos grupos y contar cada clase una sola vez. Excluir tipos de la biblioteca estándar, excepciones y enumeraciones.
-- **LCOM**. Listar los métodos con los atributos propios que usa cada uno. Excluir constructores, getters y setters. Formar las `n(n−1)/2` parejas y marcar cada una como `P` si no comparte atributos o `Q` si comparte al menos uno. Verificar que `P + Q = n(n−1)/2` y calcular `máx(0, P − Q)`.
-
-La implementación se encuentra en [`PropuestaAporte.java`](../../src/main/java/mx/archivonoventas/PropuestaAporte.java), [`Archivo.java`](../../src/main/java/mx/archivonoventas/Archivo.java) y [`Documento.java`](../../src/main/java/mx/archivonoventas/Documento.java). Queda pendiente registrar los cálculos iniciales y repetirlos con el mismo criterio en la versión refactorizada.
+Se documentaron seis hallazgos y se priorizaron cinco. Los cálculos CBO y LCOM corresponden a `PropuestaAporte`, `Archivo` y `Documento`, las tres clases de las tarjetas CRC. [Hallazgos, evidencia y cálculos](diagnostico-v1.md)
 
 ## Secuencia de la entrega
 
-1. Confirmar la revisión que ejecuta los seis Must. Conservarla con la etiqueta `v1-antes` y guardar la salida inicial de las verificaciones.
-2. Documentar al menos seis hallazgos, incluidos dos de baja cohesión, dos de alto acoplamiento (uno con Google Maps) y tres principios SOLID distintos, con SRP y DIP. Priorizar al menos cuatro.
-3. Registrar al menos cinco refactorizaciones en commits independientes con los IDs `R-xx` y `H-xx`. Cubrir tres categorías de técnicas, corregir dos violaciones SOLID y aislar el sistema externo detrás de una interfaz. Volver a ejecutar los casos afectados tras cada cambio.
+1. Etiquetar la revisión inicial y guardar la evidencia. Completado para el código y las pruebas locales de `v1-antes`. La prueba con Google Maps real está registrada como pendiente.
+2. Documentar hallazgos, priorizar y medir CBO y LCOM. Completado en el [diagnóstico](diagnostico-v1.md).
+3. Aplicar las refactorizaciones en commits independientes y volver a ejecutar los casos afectados tras cada cambio. El [plan de fase 2](plan-fase-2.md) identifica cinco cambios, sus técnicas y sus casos de regresión.
 4. Actualizar el PlantUML conforme al código, recalcular las métricas, contar las clases afectadas antes y después para un escenario de cambio y etiquetar la versión final `v2-refactorizado`.
 5. Completar el PDF de entrega y el archivo fuente UML. Incluir en el PDF la bitácora, los fragmentos antes y después, las evidencias de verificación, la reflexión del equipo y el uso de IA.
 

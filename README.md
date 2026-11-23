@@ -43,4 +43,6 @@ El navegador usa un script de JavaScript para cargar Google Maps y mostrar las f
 .\mvnw.cmd test
 ```
 
-La suite usa una base SQLite temporal y un servidor HTTP local de puerto efímero. Consulta los [resultados de verificación](docs/entrega2/verificacion-v1.md) y el [avance de la Entrega 2](docs/entrega2/avance.md).
+La suite usa una base SQLite temporal y un servidor HTTP local de puerto efímero.
+
+[Resultados de verificación](docs/entrega2/verificacion-v1.md) · [Diagnóstico y métricas](docs/entrega2/diagnostico-v1.md) · [Plan de fase 2](docs/entrega2/plan-fase-2.md)
