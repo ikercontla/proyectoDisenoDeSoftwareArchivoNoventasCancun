@@ -7,6 +7,10 @@ La comparación parte de [`v1-antes`](https://github.com/ikercontla/proyectoDise
 | ID | Hallazgo | Técnica | Qué cambió | Commit | Casos verificados |
 |---|---|---|---|---|---|
 | R-01 | H-02 · DIP | Extract Interface · Generalización | Se definió el contrato `ProveedorMapa`. La vista prepara los puntos, las fichas y la contingencia. El módulo de Google concentra la carga del SDK, el encuadre y los eventos del proveedor. | [`90945e9`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/90945e9cc013c5d73e598514127de6d71d3efae3) | V-01a/b con simulación, V-09a y V-12a/b en la suite Java. |
+| R-02 | H-01 · SRP | Move Function | Se trasladaron el saneamiento de nombres y la verificación de firmas a `Adjunto`. El ZIP reutiliza el mismo saneamiento. | [`69cd118`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/69cd11848913bd24c0e65782f48d9a55133dfd82) | V-03a/b, V-04a/b, V-06a/b, V-08a/b, V-10a/b. |
+| R-03 | H-06 | Replace Primitive with Object · Organización de datos | `FechaHistorica` conserva el texto y calcula el día de orden. SQLite sigue guardando las mismas cadenas. | [`1951465`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/19514655527547283b1d308895a45bd87befc046) | V-04a/b, V-06a/b, V-07a/b, V-10a/b y dos pruebas de fechas. |
+| R-04 | H-05 · OCP | Extract Function · Composición de métodos | El catálogo de formatos alimenta las firmas, el atributo `accept`, la ayuda y el mensaje de error. | [`e88f6f6`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/e88f6f61dad25a750586fbe66552f1787cba1a8a) | V-03a/b, V-04a/b, V-10a/b, ambas vistas y las cuatro firmas. |
+| R-05 | H-03 · SRP | Extract Class | Las altas y publicaciones directas pasan a `PantallasCuraduria`. `RespuestaWeb` concentra la preparación de vistas, redirecciones y errores compartidos. | [`f2dcba8`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/f2dcba8e4257ce94fe83264a4b536ea66003ab78) | V-02a/b, V-05a/b, V-06a/b, V-09a/b, V-10a/b y carga sobredimensionada. |
 
 ## R-01 · Aislar el proveedor de mapas
 
@@ -50,6 +54,76 @@ tests 7, pass 7, fail 0
 ```
 
 V-01a y V-01b con Google Maps real siguen pendientes de una clave autorizada. Se conserva la espera de cinco segundos documentada para la falta de respuesta. [Evidencia inicial](verificacion-v1.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/90945e9cc013c5d73e598514127de6d71d3efae3/src/test/js/mapa.test.mjs)
+
+## R-02 · Trasladar la validación de adjuntos
+
+**Antes.** `Adjunto.leer` delegaba la inspección de archivos a la clase que representa una propuesta.
+
+```java
+return new Adjunto(nombre, PropuestaAporte.tipoArchivo(nombre, datos), datos);
+```
+
+**Después.** `Adjunto.leer` utiliza la validación de su propia clase. Se conservaron las firmas, los mensajes y el límite de carga.
+
+```java
+return new Adjunto(nombre, tipoArchivo(nombre, datos), datos);
+```
+
+Maven pasó 25 pruebas y el mapa simulado pasó 7. [Adjunto antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/90945e9cc013c5d73e598514127de6d71d3efae3/src/main/java/mx/archivonoventas/Adjunto.java) · [Adjunto después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/69cd11848913bd24c0e65782f48d9a55133dfd82/src/main/java/mx/archivonoventas/Adjunto.java) · [Saneamiento en ZIP](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/69cd11848913bd24c0e65782f48d9a55133dfd82/src/main/java/mx/archivonoventas/PaquetesZip.java)
+
+## R-03 · Modelar la fecha histórica
+
+**Antes.** `PropuestaAporte` normalizaba la entrada y `Documento` volvía a interpretar la longitud de la cadena para ordenar.
+
+```java
+String fecha = normalizarFecha(fechaPropuesta);
+```
+
+**Después.** `FechaHistorica` reúne la validación, el texto que se guarda y la conversión usada por la cronología.
+
+```java
+FechaHistorica fecha = FechaHistorica.desdeEntrada(fechaPropuesta);
+```
+
+Maven pasó 27 pruebas y el mapa simulado pasó 7. Las dos pruebas de fechas incluyen precisión parcial, año bisiesto, fechas inválidas y entrada vacía. [Propuesta antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/69cd11848913bd24c0e65782f48d9a55133dfd82/src/main/java/mx/archivonoventas/PropuestaAporte.java) · [Propuesta después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/19514655527547283b1d308895a45bd87befc046/src/main/java/mx/archivonoventas/PropuestaAporte.java) · [Fecha histórica](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/19514655527547283b1d308895a45bd87befc046/src/main/java/mx/archivonoventas/FechaHistorica.java)
+
+## R-04 · Compartir el catálogo de formatos
+
+**Antes.** El clasificador y los formularios enumeraban las extensiones en sitios distintos.
+
+```html
+accept=".jpg,.png,.webp,.pdf"
+```
+
+**Después.** La lista de extensiones de los formularios proviene del mismo catálogo que valida las firmas.
+
+```java
+static String extensionesAceptadas() {
+    return FORMATOS.stream().map(FormatoOriginal::extension).collect(Collectors.joining(","));
+}
+```
+
+Maven pasó 30 pruebas y el mapa simulado pasó 7. Se comprobaron los dos atributos `accept`, las cuatro firmas y el rechazo de una firma incompatible. [Adjunto antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/19514655527547283b1d308895a45bd87befc046/src/main/java/mx/archivonoventas/Adjunto.java) · [Adjunto después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/e88f6f61dad25a750586fbe66552f1787cba1a8a/src/main/java/mx/archivonoventas/Adjunto.java) · [Formularios](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/e88f6f61dad25a750586fbe66552f1787cba1a8a/src/main/resources/templates/pantallas.html)
+
+## R-05 · Extraer las pantallas de curaduría
+
+**Antes.** El controlador `Pantallas` contenía las rutas públicas, la sesión y las operaciones de alta y publicación.
+
+```java
+@Controller
+class Pantallas {
+```
+
+**Después.** `PantallasCuraduria` recibe las rutas de alta y publicación. El filtro de autenticación y la respuesta ante una carga excesiva se comprobaron por HTTP.
+
+```java
+@Controller
+class PantallasCuraduria {
+```
+
+Maven pasó 31 pruebas y el mapa simulado pasó 7. La publicación de un binario que supera 25 MB responde 413, conserva el formulario de curaduría y mantiene el conteo de documentos. [Controlador antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/e88f6f61dad25a750586fbe66552f1787cba1a8a/src/main/java/mx/archivonoventas/Pantallas.java) · [Controlador después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/main/java/mx/archivonoventas/PantallasCuraduria.java) · [Respuestas compartidas](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/main/java/mx/archivonoventas/RespuestaWeb.java)
+
+[Verificación comparativa de los 24 casos](verificacion-v2.md) · [Métricas, UML y prueba de cambio](cierre-tecnico.md)
 
 ## Uso de IA
 

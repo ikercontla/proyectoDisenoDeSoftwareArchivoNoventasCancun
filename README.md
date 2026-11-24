@@ -47,4 +47,4 @@ La suite usa una base SQLite temporal y un servidor HTTP local de puerto efímer
 
 Para ejecutar también las pruebas del proveedor de mapas simulado, usar Node.js 24 con `node --test src/test/js/mapa.test.mjs`.
 
-[Resultados de verificación](docs/entrega2/verificacion-v1.md) · [Diagnóstico y métricas](docs/entrega2/diagnostico-v1.md) · [Plan de fase 2](docs/entrega2/plan-fase-2.md) · [Bitácora de refactorización](docs/entrega2/bitacora-refactorizacion.md)
+[Cierre técnico](docs/entrega2/cierre-tecnico.md) · [Verificación comparativa](docs/entrega2/verificacion-v2.md) · [Diagnóstico inicial](docs/entrega2/diagnostico-v1.md) · [Bitácora de refactorización](docs/entrega2/bitacora-refactorizacion.md)

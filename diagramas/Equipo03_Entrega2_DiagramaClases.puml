@@ -1,0 +1,319 @@
+' Archivo Noventas Cancún · Equipo 03 · Entrega 2
+' Tres vistas complementarias del código etiquetado v2-refactorizado.
+' Azul: clase o módulo modificado. Verde: clase, tipo o módulo nuevo.
+
+@startuml dominio
+!pragma layout smetana
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Calibri
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #34516D
+skinparam classBackgroundColor #F7F9FC
+hide empty members
+hide circle
+title Archivo Noventas Cancún · Dominio y persistencia
+
+class Archivo #E3EDFF {
+  - db : JdbcTemplate
+  ~ locaciones() : List<Locacion>
+  ~ locacion(id : long) : Locacion
+  ~ documentos(locacionId : long) : List<Documento>
+  ~ documentoPublicado(id : long) : Documento
+  ~ incorporar(documento : Documento, folio : String) : long
+  ~ guardarOriginal(nombre : String, tipo : String, contenido : byte[]) : long
+  ~ original(id : long) : Original
+  ~ tieneOriginal(id : long) : boolean
+  + cargarDemo() : void
+}
+
+class Locacion <<record>> {
+  - id : long
+  - nombre : String
+  - descripcion : String
+  - latitud : double
+  - longitud : double
+}
+
+class Documento <<record>> #E3EDFF {
+  - id : long
+  - locacionId : long
+  - binarioId : long
+  - titulo : String
+  - descripcion : String
+  - fechaHistorica : FechaHistorica
+  - tipo : String
+  - nombreOriginal : String
+  ~ {static} leer(fila : ResultSet, indice : int) : Documento
+  ~ validarPublicacion() : void
+  + referenciaDescarga() : String
+  + resumen() : String
+}
+
+class "Archivo.Original" as Original <<record>> {
+  - nombre : String
+  - tipo : String
+  - contenido : byte[]
+}
+
+class FechaHistorica #DFF5E7 {
+  - texto : String
+  ~ {static} desdeEntrada(entrada : String) : FechaHistorica
+  ~ {static} desdeRegistro(texto : String) : FechaHistorica
+  ~ {static} textoDe(fecha : FechaHistorica) : String
+  ~ diaDeOrden() : String
+  + toString() : String
+}
+
+class PropuestaAporte <<record>> #E3EDFF {
+  - folio : String
+  - locacionId : long
+  - binarioId : long
+  - descripcion : String
+  - fechaHistorica : FechaHistorica
+  - estado : String
+  - motivo : String
+  - recibida : String
+  - nombre : String
+  - tipo : String
+  - locacion : String
+  ~ {static} leer(fila : ResultSet, indice : int) : PropuestaAporte
+  ~ paraPublicar(tituloPropuesto : String, fechaPropuesta : String) : Documento
+}
+
+class Adjunto <<record>> #E3EDFF {
+  - nombre : String
+  - tipo : String
+  - contenido : byte[]
+  ~ {static} leer(archivo : MultipartFile) : Adjunto
+  ~ {static} nombreSeguro(candidato : String) : String
+  ~ {static} extensionesAceptadas() : String
+  ~ {static} ayudaFormatos() : String
+}
+
+class "Adjunto.FormatoOriginal" as FormatoOriginal <<record>> #DFF5E7 {
+  - extension : String
+  - etiqueta : String
+  - mime : String
+  - firma : Predicate<byte[]>
+}
+
+class Propuestas #E3EDFF {
+  - db : JdbcTemplate
+  - archivo : Archivo
+  ~ listar() : List<PropuestaAporte>
+  ~ buscar(folio : String) : PropuestaAporte
+  ~ existe(folio : String) : boolean
+  + recibir(locacion : long, descripcion : String, fecha : String, adjunto : MultipartFile) : String
+  ~ revisar(folio : String, usuario : String) : void
+  + aprobar(folio : String, usuario : String, titulo : String, fecha : String) : void
+  ~ rechazar(folio : String, usuario : String, motivo : String) : void
+}
+
+class Curaduria #E3EDFF {
+  - db : JdbcTemplate
+  - archivo : Archivo
+  + registrarLocacion(nombre : String, descripcion : String, latitud : String, longitud : String) : long
+  + publicar(locacion : String, titulo : String, fecha : String, descripcion : String, archivo : MultipartFile) : long
+}
+
+class Cronologia #E3EDFF {
+  ~ {static} de(documentos : List<Documento>) : List<Documento>
+}
+
+class PaquetesZip #E3EDFF {
+  - db : JdbcTemplate
+  - origen : DataSource
+  ~ preparar(locacion : long) : List<Entrada>
+  ~ escribir(entradas : List<Entrada>, destino : OutputStream) : void
+}
+
+class TextoVinculado <<record>> {
+  - texto : String
+  - destino : String
+  ~ {static} separar(descripcion : String) : List<TextoVinculado>
+}
+
+Documento "0..*" --> "1" Locacion : locacionId
+PropuestaAporte "0..*" --> "1" Locacion : locacionId
+PropuestaAporte ..> Documento : paraPublicar
+PropuestaAporte --> "0..1" FechaHistorica
+Documento --> "0..1" FechaHistorica
+Documento ..> TextoVinculado : resume
+Archivo ..> Locacion
+Archivo ..> Documento
+Archivo ..> Original : lee binarios
+Archivo ..> FechaHistorica : serializa
+Propuestas --> Archivo
+Propuestas ..> PropuestaAporte
+Propuestas ..> Adjunto
+Propuestas ..> FechaHistorica
+Curaduria --> Archivo
+Curaduria ..> Adjunto
+Curaduria ..> Documento
+Curaduria ..> FechaHistorica
+Cronologia ..> Documento
+Cronologia ..> FechaHistorica : día de orden
+Adjunto ..> FormatoOriginal : catálogo estático
+PaquetesZip ..> Adjunto : nombreSeguro
+
+legend bottom
+  |= Color |= Estado desde v1-antes |
+  |<#DFF5E7> Verde | Nuevo |
+  |<#E3EDFF> Azul | Modificado |
+  |<#F7F9FC> Gris claro | Existente |
+  ~ acceso de paquete · + público · - privado
+endlegend
+@enduml
+
+@startuml http
+!pragma layout smetana
+skinparam nodesep 22
+skinparam ranksep 24
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Calibri
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #34516D
+skinparam classBackgroundColor #F7F9FC
+hide empty members
+hide circle
+title Archivo Noventas Cancún · Controladores HTTP
+
+class Pantallas <<controller>> #E3EDFF {
+  - archivo : Archivo
+  - propuestas : Propuestas
+  - sesiones : Sesiones
+  - paquetes : PaquetesZip
+  - mapaClave : String
+  - mapaId : String
+  - cookieSegura : boolean
+  ~ inicio(q : String, anterior : String, modelo : Model) : String
+  ~ locacion(id : long, modelo : Model, res : HttpServletResponse) : String
+  ~ descargarArchivo(id : long, res : HttpServletResponse) : void
+  ~ detalleDocumento(id : long, vinculo : String, modelo : Model) : String
+  ~ panel(modelo : Model) : String
+}
+
+class PantallasCuraduria <<controller>> #DFF5E7 {
+  - archivo : Archivo
+  - curaduria : Curaduria
+  ~ nuevaLocacion(modelo : Model) : String
+  ~ guardarLocacion(nombre : String, descripcion : String,\n   latitud : String, longitud : String, modelo : Model,\n   res : HttpServletResponse) : String
+  ~ nuevoDocumento(modelo : Model) : String
+  ~ publicarDocumento(locacion : String, titulo : String,\n   fecha : String, descripcion : String, archivo : MultipartFile,\n   modelo : Model, res : HttpServletResponse) : String
+  ~ adjuntoInvalido(error : MultipartException, modelo : Model, res : HttpServletResponse) : String
+}
+
+class RespuestaWeb #DFF5E7 {
+  ~ {static} pagina(modelo : Model, vista : String, titulo : String, seccion : String) : String
+  ~ {static} irA(res : HttpServletResponse, destino : String) : String
+  ~ {static} formatosDeCarga(modelo : Model) : void
+  ~ {static} estadoCarga(error : MultipartException) : int
+  ~ {static} error(error : ErrorAplicacion, modelo : Model, res : HttpServletResponse) : String
+}
+
+class Web <<filter>> {
+  - sesiones : Sesiones
+  - segura : boolean
+  # doFilterInternal(req : HttpServletRequest, res : HttpServletResponse, cadena : FilterChain) : void
+  ~ {static} cookie(req : HttpServletRequest) : String
+}
+
+class Sesiones {
+  - db : JdbcTemplate
+  ~ autenticar(entrada : String, contrasena : String) : String
+  + iniciar(usuario : String, anterior : String) : String
+  ~ usuarioActivo(token : String) : String
+  ~ cerrar(token : String) : void
+}
+
+class Archivo #E3EDFF
+class Propuestas #E3EDFF
+class Cronologia #E3EDFF
+class Curaduria #E3EDFF
+class PaquetesZip #E3EDFF
+class Adjunto #E3EDFF
+class BusquedaLocaciones <<record>>
+
+Web --> Sesiones
+Pantallas --> Archivo
+Pantallas --> Propuestas
+Pantallas --> Sesiones
+Pantallas --> PaquetesZip
+Pantallas ..> BusquedaLocaciones
+Pantallas ..> Cronologia
+Pantallas ..> RespuestaWeb
+Pantallas ..> Adjunto : aviso
+PantallasCuraduria --> Archivo
+PantallasCuraduria --> Curaduria
+PantallasCuraduria ..> RespuestaWeb
+PantallasCuraduria ..> Adjunto : aviso
+RespuestaWeb ..> Adjunto
+Web -[hidden]down-> Pantallas
+
+note bottom of Web
+  El filtro protege las rutas /administracion/*
+  de ambos controladores.
+end note
+
+legend bottom
+  <back:#DFF5E7>Verde</back> nuevo · <back:#E3EDFF>Azul</back> modificado
+  Se muestran las operaciones representativas.
+endlegend
+@enduml
+
+@startuml mapas
+!pragma layout smetana
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Calibri
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #34516D
+skinparam classBackgroundColor #F7F9FC
+hide empty members
+hide circle
+title Archivo Noventas Cancún · Interfaz del proveedor de mapas
+
+class "mapa.js" as Entrada <<módulo JavaScript>> #E3EDFF
+class "mapa-vista.js" as Vista <<módulo JavaScript>> #DFF5E7 {
+  + prepararMapa(panel : HTMLElement, estado : HTMLElement, proveedor : ProveedorMapa) : void
+}
+interface ProveedorMapa <<interface>> #DFF5E7 {
+  + cargar(solicitud : SolicitudMapa) : void
+}
+class "mapa-google.js" as Adaptador <<módulo JavaScript>> #DFF5E7 {
+  + crearProveedorGoogle(configuracion : Object) : ProveedorMapa
+}
+class SolicitudMapa <<tipo JSDoc>> #DFF5E7 {
+  + contenedor : HTMLElement
+  + puntos : PuntoDelMapa[]
+  + activo() : boolean
+  + montado() : void
+  + listo() : void
+  + fallar() : void
+}
+class PuntoDelMapa <<tipo JSDoc>> #DFF5E7 {
+  + posicion : {lat : number, lng : number}
+  + titulo : string
+  + ficha() : HTMLElement
+}
+class "Google Maps JavaScript API" as SDK <<externo>>
+Entrada ..> Vista : inicia
+Entrada ..> Adaptador : construye
+Vista ..> ProveedorMapa : recibe y llama
+Adaptador ..|> ProveedorMapa : objeto producido
+Adaptador ..> SDK : carga y dibuja
+ProveedorMapa ..> SolicitudMapa
+SolicitudMapa *-- "0..*" PuntoDelMapa
+
+note bottom of ProveedorMapa
+  La realización indica cumplimiento estructural
+  del contrato JSDoc por el objeto que fabrica
+  mapa-google.js.
+end note
+
+legend bottom
+  <back:#DFF5E7>Verde</back> nuevo · <back:#E3EDFF>Azul</back> modificado
+endlegend
+@enduml

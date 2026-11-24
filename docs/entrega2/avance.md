@@ -39,8 +39,8 @@ Se documentaron seis hallazgos y se priorizaron cinco. Los cálculos CBO y LCOM 
 
 1. Etiquetar la revisión inicial y guardar la evidencia. Completado para el código y las pruebas locales de `v1-antes`. La prueba con Google Maps real está registrada como pendiente.
 2. Documentar hallazgos, priorizar y medir CBO y LCOM. Completado en el [diagnóstico](diagnostico-v1.md).
-3. Aplicar las refactorizaciones en commits independientes y volver a ejecutar los casos afectados tras cada cambio. El [plan de fase 2](plan-fase-2.md) identifica cinco cambios, sus técnicas y sus casos de regresión.
-4. Actualizar el PlantUML conforme al código, recalcular las métricas, contar las clases afectadas antes y después para un escenario de cambio y etiquetar la versión final `v2-refactorizado`.
+3. Se aplicaron las cinco refactorizaciones en commits independientes y se repitieron los casos. [Bitácora](bitacora-refactorizacion.md) · [Verificación comparativa](verificacion-v2.md)
+4. Se actualizó el PlantUML, se recalcularon las métricas y se documentó la prueba de cambio. [Cierre técnico](cierre-tecnico.md) · [`v2-refactorizado`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/v2-refactorizado)
 5. Completar el PDF de entrega y el archivo fuente UML. Incluir en el PDF la bitácora, los fragmentos antes y después, las evidencias de verificación, la reflexión del equipo y el uso de IA.
 
 ## Uso de IA
