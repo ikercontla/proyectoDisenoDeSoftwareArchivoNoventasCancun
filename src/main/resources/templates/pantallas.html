@@ -126,8 +126,8 @@
       <small id="fecha-ayuda">Puedes indicar el año, el año y mes o la fecha completa (AAAA-MM-DD).</small>
     </label>
     <label>Archivo original
-      <input name="archivo" type="file" accept=".jpg,.png,.webp,.pdf" aria-describedby="archivo-ayuda" required>
-      <small id="archivo-ayuda">JPG, PNG, WebP o PDF de hasta 25 MB.</small>
+      <input name="archivo" type="file" th:attr="accept=${formatosAceptados}" aria-describedby="archivo-ayuda" required>
+      <small id="archivo-ayuda" th:text="${ayudaFormatos}"></small>
     </label>
     <button type="submit">Enviar aporte</button>
   </form>
@@ -241,9 +241,9 @@
       <small th:replace="~{pantallas :: errorCampo('descripcion',${errores['descripcion']})}"></small>
     </label>
     <label>Archivo original
-      <input name="archivo" type="file" accept=".jpg,.png,.webp,.pdf" required
-             th:attr="aria-invalid=${errores['archivo'] != null},aria-describedby=${errores['archivo'] != null ? 'error-archivo ayuda-archivo' : 'ayuda-archivo'}">
-      <small id="ayuda-archivo">JPG, PNG, WebP o PDF de hasta 25 MB.</small>
+      <input name="archivo" type="file" required
+             th:attr="accept=${formatosAceptados},aria-invalid=${errores['archivo'] != null},aria-describedby=${errores['archivo'] != null ? 'error-archivo ayuda-archivo' : 'ayuda-archivo'}">
+      <small id="ayuda-archivo" th:text="${ayudaFormatos}"></small>
       <small th:replace="~{pantallas :: errorCampo('archivo',${errores['archivo']})}"></small>
     </label>
     <button type="submit">Publicar documento</button>

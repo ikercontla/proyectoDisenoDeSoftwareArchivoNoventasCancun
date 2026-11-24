@@ -339,6 +339,14 @@ class AceptacionTest {
     }
 
     @Test
+    void formulariosAnuncianLosMismosFormatosDeCarga() throws Exception {
+        String formatos = "accept=\".jpg,.png,.webp,.pdf\"";
+        String ayuda = "JPG, PNG, WebP o PDF de hasta 25 MB.";
+        assertThat(texto(get("/aportar"))).contains(formatos, ayuda);
+        assertThat(texto(get(PUBLICAR_DOCUMENTO, iniciarSesion()))).contains(formatos, ayuda);
+    }
+
+    @Test
     @DisplayName("V-10b · publicar sin locación o año no crea documentos ni binarios")
     void publicacionIncompleta() throws Exception {
         String sesion = iniciarSesion();

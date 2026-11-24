@@ -3,12 +3,28 @@ package mx.archivonoventas;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Locale;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.springframework.web.multipart.MultipartFile;
 
 record Adjunto(String nombre, String tipo, byte[] contenido) {
+    private record FormatoOriginal(String extension, String etiqueta, String mime, Predicate<byte[]> firma) {}
+
+    private static final List<FormatoOriginal> FORMATOS = List.of(
+            new FormatoOriginal(".jpg", "JPG", "image/jpeg",
+                    datos -> comienza(datos, 0, HexFormat.of().parseHex("ffd8ff"))),
+            new FormatoOriginal(".png", "PNG", "image/png",
+                    datos -> comienza(datos, 0, HexFormat.of().parseHex("89504e470d0a1a0a"))),
+            new FormatoOriginal(".webp", "WebP", "image/webp",
+                    datos -> comienza(datos, 0, ascii("RIFF")) && comienza(datos, 8, ascii("WEBP"))),
+            new FormatoOriginal(".pdf", "PDF", "application/pdf", datos -> comienza(datos, 0, ascii("%PDF-"))));
+
     static final int LIMITE = 25_000_000;
-    static final String ARCHIVO_INVALIDO = "Debe adjuntar un archivo válido (.jpg, .png, .webp, .pdf de hasta 25 MB)";
+    private static final String AYUDA_LIMITE = " de hasta 25 MB";
+    static final String ARCHIVO_INVALIDO = "Debe adjuntar un archivo válido ("
+            + extensionesAceptadas().replace(",", ", ") + AYUDA_LIMITE + ")";
 
     static Adjunto leer(MultipartFile archivo) throws IOException {
         if (archivo == null || archivo.isEmpty() || archivo.getSize() > LIMITE) {
@@ -25,21 +41,27 @@ record Adjunto(String nombre, String tipo, byte[] contenido) {
         return normal.substring(normal.lastIndexOf('/') + 1).replaceAll("\\p{Cntrl}", "");
     }
 
+    static String extensionesAceptadas() {
+        return FORMATOS.stream().map(FormatoOriginal::extension).collect(Collectors.joining(","));
+    }
+
+    static String ayudaFormatos() {
+        String etiquetas = FORMATOS.stream().map(FormatoOriginal::etiqueta).collect(Collectors.joining(", "));
+        int ultimaComa = etiquetas.lastIndexOf(", ");
+        if (ultimaComa >= 0) etiquetas = etiquetas.substring(0, ultimaComa) + " o " + etiquetas.substring(ultimaComa + 2);
+        return etiquetas + AYUDA_LIMITE + ".";
+    }
+
     private static String tipoArchivo(String nombre, byte[] datos) {
         int punto = nombre.lastIndexOf('.');
         if (punto < 1 || nombre.length() > 240 || datos.length == 0 || datos.length > LIMITE) {
             throw new ErrorAplicacion(422, ARCHIVO_INVALIDO);
         }
         String extension = nombre.substring(punto).toLowerCase(Locale.ROOT);
-        String tipo = switch (extension) {
-            case ".jpg" -> comienza(datos, 0, HexFormat.of().parseHex("ffd8ff")) ? "image/jpeg" : null;
-            case ".png" -> comienza(datos, 0, HexFormat.of().parseHex("89504e470d0a1a0a")) ? "image/png" : null;
-            case ".webp" -> comienza(datos, 0, ascii("RIFF")) && comienza(datos, 8, ascii("WEBP")) ? "image/webp" : null;
-            case ".pdf" -> comienza(datos, 0, ascii("%PDF-")) ? "application/pdf" : null;
-            default -> null;
-        };
-        if (tipo == null) throw new ErrorAplicacion(422, ARCHIVO_INVALIDO);
-        return tipo;
+        for (FormatoOriginal formato : FORMATOS) {
+            if (formato.extension().equals(extension) && formato.firma().test(datos)) return formato.mime();
+        }
+        throw new ErrorAplicacion(422, ARCHIVO_INVALIDO);
     }
 
     private static byte[] ascii(String firma) {

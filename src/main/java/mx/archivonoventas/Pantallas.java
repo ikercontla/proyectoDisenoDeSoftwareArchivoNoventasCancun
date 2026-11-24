@@ -288,13 +288,20 @@ class Pantallas {
 
     private String formularioPublicacion(Model modelo, Map<String, String> valores, Map<String, String> errores) {
         modelo.addAttribute("valores", valores).addAttribute("errores", errores).addAttribute("locaciones", archivo.locaciones());
+        formatosDeCarga(modelo);
         return pagina(modelo, "publicarDocumento", "Publicar documento", "admin");
     }
 
     private String formularioAporte(Model modelo, String locacion, String descripcion, String fecha, String mensaje) {
         modelo.addAttribute("locaciones", archivo.locaciones()).addAttribute("seleccion", locacion)
                 .addAttribute("descripcion", descripcion).addAttribute("fecha", fecha).addAttribute("mensaje", mensaje);
+        formatosDeCarga(modelo);
         return pagina(modelo, "aporte", "Aportar al archivo", "aportar");
+    }
+
+    private static void formatosDeCarga(Model modelo) {
+        modelo.addAttribute("formatosAceptados", Adjunto.extensionesAceptadas())
+                .addAttribute("ayudaFormatos", Adjunto.ayudaFormatos());
     }
 
     private static String detalle(Model modelo, PropuestaAporte propuesta, String mensaje) {
