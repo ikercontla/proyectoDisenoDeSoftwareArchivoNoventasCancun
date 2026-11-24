@@ -33,7 +33,7 @@ Los 24 casos funcionales conservaron sus entradas, sus resultados esperados y su
 
 ## Salida de pruebas
 
-Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del mapa se ejercitaron con dobles del navegador y del SDK. La validación con el proveedor real y la disponibilidad mensual en un entorno desplegado siguen pendientes.
+Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del mapa se ejercitaron con dobles del navegador y del SDK. Para el ajuste de RNF-03 también se usó Chromium con la solicitud de Google interceptada.
 
 | Revisión | Maven | Mapa simulado |
 |---|---|---|
@@ -44,19 +44,20 @@ Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del m
 | R-04 | 30 pruebas, 0 fallos, 0 errores | 7 de 7 |
 | R-05 | 31 pruebas, 0 fallos, 0 errores | 7 de 7 |
 | R-06 | 33 pruebas, 0 fallos, 0 errores | 7 de 7 |
+| Ajuste de contingencia del mapa | 33 pruebas, 0 fallos, 0 errores | 9 de 9 |
 
 En la verificación final se obtuvo:
 
     Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
     BUILD SUCCESS
-    tests 7 / pass 7 / fail 0
+    tests 9 / pass 9 / fail 0
 
 Las pruebas adicionales cubren precisión de fechas, firmas de archivos, coherencia de formularios, tamaño en publicación directa, original ausente en la descarga en lote y reversión de la escritura de un original. Se reproducen en Windows desde la raíz del repositorio con estos comandos.
 
     .\mvnw.cmd verify
     node --test src/test/js/mapa.test.mjs
 
-El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bitácora](bitacora-refactorizacion.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/test/js/mapa.test.mjs)
+El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bitácora](bitacora-refactorizacion.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/0aef0bdb9030fda11e93b9b52f7a1e13d8a00822/src/test/js/mapa.test.mjs)
 
 ## Requisitos no funcionales
 
@@ -64,7 +65,17 @@ El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bi
 |---|---|
 | RNF-01 · Mapa con hasta 100 marcadores | Falta medir el LCP de hasta 2,5 s con Google Maps real, Lighthouse y las condiciones de red del SRS. Se requiere una clave autorizada. |
 | RNF-02 · Rendimiento del ZIP | La medición local de R-06 obtuvo P95 de **4,748 s**. El objetivo de P95 de hasta 4 s sigue pendiente. |
-| RNF-03 · Contingencia de Google Maps | El catálogo y los errores se verificaron con simulaciones. Falta cronometrar el bloqueo de Google Maps en navegador. Si el proveedor no responde ni comunica un error, el aviso de contingencia se activa a los **5 s**, por encima del plazo de 1 s. |
-| RNF-03 · Disponibilidad mensual | Falta medir el 99,5 % con un entorno desplegado y sondas cada 60 s durante un mes. |
+| RNF-03 · Contingencia de Google Maps | El catálogo está disponible desde la primera vista. Se verificó en Chromium que el aviso aparece en menos de 1 s al bloquear la solicitud o dejarla sin respuesta. El mapa aparece si después termina de cargar. |
+| RNF-03 · Disponibilidad mensual | El 99,5 % se registra como supuesto operativo para esta entrega, sin verificación. Comprobarlo en operación requiere un entorno desplegado y sondas cada 60 s durante el periodo mensual. |
 
 La prueba local de RNF-02 usó 50 documentos sintéticos de 2 MB, una solicitud de calentamiento y diez descargas simultáneas por HTTP en localhost. Midió desde el envío hasta recibir el ZIP completo. El P95 por rango más cercano fue **4,859 s** en R-05 y **4,748 s** en R-06. La [medición inicial](verificacion-v1.md) obtuvo **3,898 s** en una ejecución anterior. Se ensayó un búfer de compresión de 64 KiB en una copia de R-06 y obtuvo **4,755 s**. Se conservó el búfer original. [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
+
+### Contingencia en el navegador
+
+| Escenario en Chromium | Resultado local |
+|---|---|
+| Solicitud a `maps.googleapis.com` bloqueada | Aviso de mapa no disponible a los **17 ms**. Las dos locaciones de prueba siguieron accesibles. |
+| Solicitud retenida sin respuesta | Aviso de demora a los **801 ms**. El catálogo quedó visible y el panel de mapa siguió oculto. |
+| Respuesta tardía del SDK en escritorio y de los mosaicos en móvil | Aviso de demora a los **800 ms** en ambos casos. El mapa apareció al completar la carga y el aviso se ocultó. |
+
+Los tiempos se midieron desde que la vista solicitó el SDK hasta que cambió el aviso. La respuesta del proveedor se controló en el navegador para reproducir cada escenario. La prueba de LCP de RNF-01 y V-01a con el proveedor real requieren una clave autorizada. [Ajuste de contingencia](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/0aef0bdb9030fda11e93b9b52f7a1e13d8a00822)

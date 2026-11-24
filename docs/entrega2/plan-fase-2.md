@@ -28,7 +28,7 @@ Tras cerrar los cinco cambios iniciales en `v2-refactorizado`, R-06 atendió H-0
 
 ## Validación externa pendiente
 
-V-01a y V-01b con Google Maps real requieren una clave autorizada. El comportamiento del catálogo ya se observa localmente y el fallo de carga se ejercitó con simulación. Para RNF-03, medir la respuesta ante bloqueo y ante falta de respuesta. El código inicial conserva un temporizador de cinco segundos para el segundo caso. Si la medición requiere corregir un tiempo observable, registrarlo como corrección funcional independiente de la refactorización. [Código inicial del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/5d152e48257858de55c34d4d4ce5e8b36da68ecb/src/main/resources/static/mapa.js#L9) · [RNF del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
+V-01a y la medición de RNF-01 con Google Maps real requieren una clave autorizada. Para RNF-03 se ajustó la espera del catálogo en un commit funcional separado y se comprobó el bloqueo y la falta de respuesta en Chromium. La disponibilidad mensual quedó como supuesto operativo de la entrega. [Resultados de verificación](verificacion-v2.md#contingencia-en-el-navegador) · [RNF del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
 
 ## Uso de IA
 

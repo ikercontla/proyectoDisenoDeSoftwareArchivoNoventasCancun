@@ -54,7 +54,7 @@ BUILD SUCCESS
 tests 7, pass 7, fail 0
 ```
 
-V-01a y V-01b con Google Maps real siguen pendientes de una clave autorizada. Se conserva la espera de cinco segundos documentada para la falta de respuesta. [Evidencia inicial](verificacion-v1.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/90945e9cc013c5d73e598514127de6d71d3efae3/src/test/js/mapa.test.mjs)
+R-01 conservó la espera de cinco segundos que tenía el código inicial. Un ajuste posterior redujo esa espera para RNF-03 y se verificó en Chromium. [Evidencia inicial](verificacion-v1.md) · [Verificación de la contingencia](verificacion-v2.md#contingencia-en-el-navegador)
 
 ## R-02 · Trasladar la validación de adjuntos
 
