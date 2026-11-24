@@ -30,6 +30,8 @@ import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
@@ -51,6 +53,10 @@ class AceptacionTest {
     int puerto;
     @Autowired
     JdbcTemplate db;
+    @Autowired
+    Originales originales;
+    @Autowired
+    PlatformTransactionManager transacciones;
 
     @DynamicPropertySource
     static void configurar(DynamicPropertyRegistry registro) {
@@ -270,6 +276,26 @@ class AceptacionTest {
             assertThat(zip.readAllBytes()).isEqualTo(PDF);
             assertThat(zip.getNextEntry()).isNull();
         }
+    }
+
+    @Test
+    void zipConOriginalAusenteRespondeAntesDeIniciarLaDescarga() throws Exception {
+        var respuesta = get("/locaciones/1/archivo.zip");
+        assertThat(respuesta.statusCode()).isEqualTo(404);
+        assertThat(respuesta.headers().firstValue("Content-Disposition")).isEmpty();
+        assertThat(texto(respuesta)).contains("Un documento de este archivo no está disponible temporalmente.");
+    }
+
+    @Test
+    void elGuardadoDelOriginalParticipaEnLaTransaccionDePublicacion() {
+        Long id = new TransactionTemplate(transacciones).execute(estado -> {
+            long binario = originales.guardar("requiere-confirmacion.pdf", "application/pdf", PDF);
+            assertThat(originales.disponible(binario)).isTrue();
+            estado.setRollbackOnly();
+            return binario;
+        });
+        assertThat(id).isNotNull();
+        assertThat(originales.disponible(id)).isFalse();
     }
 
     @Test

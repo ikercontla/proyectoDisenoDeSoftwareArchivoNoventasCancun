@@ -16,10 +16,12 @@ public class Propuestas {
             """;
     private final JdbcTemplate db;
     private final Archivo archivo;
+    private final Originales originales;
 
-    Propuestas(JdbcTemplate db, Archivo archivo) {
+    Propuestas(JdbcTemplate db, Archivo archivo, Originales originales) {
         this.db = db;
         this.archivo = archivo;
+        this.originales = originales;
     }
 
     List<PropuestaAporte> listar() {
@@ -44,7 +46,7 @@ public class Propuestas {
         }
         FechaHistorica fechaHistorica = FechaHistorica.desdeEntrada(fecha);
         String folio = UUID.randomUUID().toString();
-        long binario = archivo.guardarOriginal(original.nombre(), original.tipo(), original.contenido());
+        long binario = originales.guardar(original.nombre(), original.tipo(), original.contenido());
         db.update("""
                 INSERT INTO propuestas (folio, locacion_id, binario_id, descripcion, fecha_historica)
                 VALUES (?, ?, ?, ?, ?)
@@ -65,7 +67,7 @@ public class Propuestas {
         if (archivo.locacion(propuesta.locacionId()) == null) {
             throw new ErrorAplicacion(422, "La locación de esta propuesta ya no está activa.");
         }
-        if (!archivo.tieneOriginal(propuesta.binarioId())) {
+        if (!originales.disponible(propuesta.binarioId())) {
             throw new ErrorAplicacion(422, "El original del aporte no está disponible.");
         }
         Documento documento = propuesta.paraPublicar(titulo, fecha);

@@ -12,16 +12,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class Archivo {
-    record Original(String nombre, String tipo, byte[] contenido) {}
-
     private static final String LOCACIONES = "SELECT * FROM locaciones WHERE activa = 1";
     private static final String DOCUMENTOS = """
             SELECT d.*, b.tipo, b.nombre FROM documentos d JOIN binarios b ON b.id = d.binario_id
             """;
     private final JdbcTemplate db;
+    private final Originales originales;
 
-    Archivo(JdbcTemplate db) {
+    Archivo(JdbcTemplate db, Originales originales) {
         this.db = db;
+        this.originales = originales;
     }
 
     List<Locacion> locaciones() {
@@ -51,22 +51,6 @@ public class Archivo {
                 documento.descripcion(), FechaHistorica.textoDe(documento.fechaHistorica()));
     }
 
-    long guardarOriginal(String nombre, String tipo, byte[] contenido) {
-        return db.queryForObject("INSERT INTO binarios (nombre, tipo, contenido) VALUES (?, ?, ?) RETURNING id",
-                Long.class, nombre, tipo, contenido);
-    }
-
-    Original original(long id) {
-        return db.query("SELECT nombre, tipo, contenido FROM binarios WHERE id = ? AND contenido IS NOT NULL",
-                (fila, i) -> new Original(fila.getString("nombre"), fila.getString("tipo"), fila.getBytes("contenido")),
-                id).stream().findFirst().orElse(null);
-    }
-
-    boolean tieneOriginal(long id) {
-        return Boolean.TRUE.equals(db.queryForObject(
-                "SELECT EXISTS(SELECT 1 FROM binarios WHERE id = ? AND contenido IS NOT NULL)", Boolean.class, id));
-    }
-
     @Transactional
     public void cargarDemo() {
         if (db.queryForObject("SELECT COUNT(*) FROM locaciones", Integer.class) != 0) return;
@@ -82,12 +66,12 @@ public class Archivo {
             throw new UncheckedIOException("No se pudo leer el PDF de demostración.", e);
         }
         String nombre = "ficha-de-demostracion.pdf";
-        long binario = guardarOriginal(nombre, "application/pdf", pdf);
+        long binario = originales.guardar(nombre, "application/pdf", pdf);
         long primeraFicha = incorporar(new Documento(0, id, binario, "Ficha de demostración",
                 "Documento de muestra. Explora también [Palacio Municipal](/locaciones/" + municipio + ").",
                 FechaHistorica.desdeEntrada("1995"), "application/pdf", nombre), null);
         String nombreComplementario = "nota-de-demostracion.pdf";
-        long complementario = guardarOriginal(nombreComplementario, "application/pdf", pdf);
+        long complementario = originales.guardar(nombreComplementario, "application/pdf", pdf);
         incorporar(new Documento(0, id, complementario, "Nota de demostración",
                 "Segundo documento de muestra para la cronología. Consulta la [ficha de demostración](/documentos/" +
                         primeraFicha + ").", FechaHistorica.desdeEntrada("1998-03"), "application/pdf", nombreComplementario), null);

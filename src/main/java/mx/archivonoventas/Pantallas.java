@@ -33,6 +33,7 @@ class Pantallas {
     private static final String PANEL = "/administracion/propuestas";
     private static final String FOLIO = "/administracion/propuestas/{folio:[a-f0-9-]{36}}";
     private final Archivo archivo;
+    private final Originales originales;
     private final Propuestas propuestas;
     private final Sesiones sesiones;
     private final PaquetesZip paquetes;
@@ -40,10 +41,11 @@ class Pantallas {
     private final String mapaId;
     private final boolean cookieSegura;
 
-    Pantallas(Archivo archivo, Propuestas propuestas, Sesiones sesiones, PaquetesZip paquetes,
+    Pantallas(Archivo archivo, Originales originales, Propuestas propuestas, Sesiones sesiones, PaquetesZip paquetes,
               @Value("${archivo.maps-key}") String mapaClave, @Value("${archivo.maps-id}") String mapaId,
               @Value("${archivo.cookie-segura}") boolean cookieSegura) {
         this.archivo = archivo;
+        this.originales = originales;
         this.propuestas = propuestas;
         this.sesiones = sesiones;
         this.paquetes = paquetes;
@@ -107,7 +109,7 @@ class Pantallas {
     @GetMapping("/documentos/{id:[0-9]+}/original")
     ResponseEntity<byte[]> documento(@PathVariable long id) {
         Documento documento = buscarDocumento(id);
-        Archivo.Original original = archivo.original(documento.binarioId());
+        Originales.Original original = originales.buscar(documento.binarioId());
         if (original == null) {
             LOG.warn("Original ausente para el documento {}", id);
             throw new ErrorAplicacion(404, PropuestaAporte.DESCARGA_NO_DISPONIBLE);
@@ -176,7 +178,7 @@ class Pantallas {
 
     @GetMapping(FOLIO + "/original")
     ResponseEntity<byte[]> originalAporte(@PathVariable String folio) {
-        Archivo.Original original = archivo.original(propuestas.buscar(folio).binarioId());
+        Originales.Original original = originales.buscar(propuestas.buscar(folio).binarioId());
         if (original == null) throw new ErrorAplicacion(404, "El original del aporte no está disponible.");
         return descargar(original);
     }
@@ -263,7 +265,7 @@ class Pantallas {
                 .sameSite("Strict").secure(cookieSegura).build().toString();
     }
 
-    private static ResponseEntity<byte[]> descargar(Archivo.Original original) {
+    private static ResponseEntity<byte[]> descargar(Originales.Original original) {
         return ResponseEntity.ok().contentType(MediaType.parseMediaType(original.tipo()))
                 .contentLength(original.contenido().length)
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()

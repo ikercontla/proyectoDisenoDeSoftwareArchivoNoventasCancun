@@ -13,10 +13,12 @@ import org.springframework.web.multipart.MultipartFile;
 public class Curaduria {
     private final JdbcTemplate db;
     private final Archivo archivo;
+    private final Originales originales;
 
-    Curaduria(JdbcTemplate db, Archivo archivo) {
+    Curaduria(JdbcTemplate db, Archivo archivo, Originales originales) {
         this.db = db;
         this.archivo = archivo;
+        this.originales = originales;
     }
 
     @Transactional
@@ -61,7 +63,7 @@ public class Curaduria {
             errores.put("archivo", error.getMessage());
         }
         confirmar(errores);
-        long binario = archivo.guardarOriginal(adjunto.nombre(), adjunto.tipo(), adjunto.contenido());
+        long binario = originales.guardar(adjunto.nombre(), adjunto.tipo(), adjunto.contenido());
         return archivo.incorporar(new Documento(0, locacion, binario, titulo, descripcion, fecha,
                 adjunto.tipo(), adjunto.nombre()), null);
     }
