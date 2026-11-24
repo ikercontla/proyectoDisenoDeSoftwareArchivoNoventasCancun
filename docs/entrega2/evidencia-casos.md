@@ -2,9 +2,9 @@
 
 Equipo 03 · Archivo Noventas Cancún
 
-Se repitieron los 24 casos de aceptación en copias de las etiquetas de Git, con Java 17, SQLite temporal y un servidor local. La tabla compara `v1-antes` con `v2.1-refactorizado`, que incluye R-01 a R-06. La [salida de consola](salida-verificacion.txt) identifica los métodos de cada caso y también incluye la ejecución de `v2-refactorizado`, la versión de R-01 a R-05.
+La tabla compara dos versiones. **Antes** corresponde a `v1-antes` y **Después** a `v2.1-refactorizado`, que incluye R-01 a R-06. Se ejecutaron los mismos 24 casos de aceptación en ambas versiones con Java 17, SQLite temporal y un servidor local. [Salida de consola por caso](salida-verificacion.txt)
 
-Los 24 casos pasaron en las tres revisiones. Cada resultado se cotejó con el informe JUnit de Maven Surefire. Los segundos corresponden a la duración del método de prueba en Java. V-01a y V-01b también se verificaron con Google Maps simulado antes y después. [Código de las pruebas antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Código de las pruebas después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v2.1-refactorizado/src/test/java/mx/archivonoventas/AceptacionTest.java)
+Los 24 casos pasaron en ambas versiones. Cada resultado se cotejó con el informe JUnit de Maven Surefire. Los segundos corresponden a la duración del método de prueba en Java. V-01a y V-01b también se verificaron con Google Maps simulado antes y después. [Código de las pruebas antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Código de las pruebas después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v2.1-refactorizado/src/test/java/mx/archivonoventas/AceptacionTest.java)
 
 ## RF-01 a RF-06
 

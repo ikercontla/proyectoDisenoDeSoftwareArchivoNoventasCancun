@@ -2,11 +2,11 @@
 
 Equipo 03 · Archivo Noventas Cancún
 
-Los 24 casos funcionales conservaron sus entradas, sus resultados esperados y su método de verificación al pasar de `v1-antes` a `v2-refactorizado`. R-06 volvió a ejecutar esos casos en `v2.1-refactorizado`. [Verificación inicial](verificacion-v1.md) · [Suite inicial](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Suite refactorizada](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb/src/test/java/mx/archivonoventas/AceptacionTest.java)
+Se comparan los mismos 24 casos funcionales en `v1-antes` y `v2.1-refactorizado`, con las seis refactorizaciones aplicadas. Cada caso conserva sus entradas y resultados esperados. [Verificación inicial](verificacion-v1.md) · [Suite inicial](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Suite refactorizada](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v2.1-refactorizado/src/test/java/mx/archivonoventas/AceptacionTest.java)
 
-El [anexo de evidencia por caso](evidencia-casos.md) reúne las entradas, los resultados esperados y el antes y el después. La [salida de consola](salida-verificacion.txt) conserva las líneas de las tres ejecuciones etiquetadas.
+El anexo reúne las entradas y resultados esperados. El registro de consola muestra los 24 casos de ambas ejecuciones. [Evidencia por caso](evidencia-casos.md) · [Salida de consola](salida-verificacion.txt)
 
-| Caso | Comprobación | v1-antes | v2-refactorizado y v2.1-refactorizado |
+| Caso | Comprobación | Antes · v1-antes | Después · v2.1-refactorizado |
 |---|---|---|---|
 | V-01a | Java entrega coordenadas y enlaces. Con Google Maps simulado se confirmó la posición del marcador y la ficha al seleccionarlo. | Simulación y recursos | Simulación y recursos |
 | V-01b | La página muestra las locaciones activas. Al disparar el error del script se ocultó el mapa y se mostró el aviso del catálogo. | Simulación y recursos | Simulación y recursos |
@@ -39,27 +39,21 @@ Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del m
 
 | Revisión | Maven | Mapa simulado |
 |---|---|---|
-| v1-antes | 25 pruebas, 0 fallos, 0 errores | V-01a/b comprobados sobre el script original |
-| R-01 | 25 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| R-02 | 25 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| R-03 | 27 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| R-04 | 30 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| R-05 | 31 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| R-06 | 33 pruebas, 0 fallos, 0 errores | 7 de 7 |
-| Ajuste de contingencia del mapa | 33 pruebas, 0 fallos, 0 errores | 9 de 9 |
+| Antes · v1-antes | 25 pruebas, 0 fallos, 0 errores | V-01a/b comprobados sobre el script original |
+| Después · v2.1-refactorizado | 33 pruebas, 0 fallos, 0 errores | 7 de 7 |
 
-En la verificación final se obtuvo:
+La versión refactorizada produjo esta salida.
 
     Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
     BUILD SUCCESS
-    tests 9 / pass 9 / fail 0
+    tests 7 / pass 7 / fail 0
 
 Las pruebas adicionales cubren precisión de fechas, firmas de archivos, coherencia de formularios, tamaño en publicación directa, original ausente en la descarga en lote y reversión de la escritura de un original. Se reproducen en Windows desde la raíz del repositorio con estos comandos.
 
     .\mvnw.cmd verify
     node --test src/test/js/mapa.test.mjs
 
-El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bitácora](bitacora-refactorizacion.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/0aef0bdb9030fda11e93b9b52f7a1e13d8a00822/src/test/js/mapa.test.mjs)
+El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. Las ejecuciones de cada refactorización figuran en la bitácora. [Bitácora](bitacora-refactorizacion.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v2.1-refactorizado/src/test/js/mapa.test.mjs)
 
 ## Requisitos no funcionales
 
@@ -73,6 +67,8 @@ El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bi
 La prueba local de RNF-02 usó 50 documentos sintéticos de 2 MB, una solicitud de calentamiento y diez descargas simultáneas por HTTP en localhost. Midió desde el envío hasta recibir el ZIP completo. El P95 por rango más cercano fue **4,859 s** en R-05 y **4,748 s** en R-06. La [medición inicial](verificacion-v1.md) obtuvo **3,898 s** en una ejecución anterior. Se ensayó un búfer de compresión de 64 KiB en una copia de R-06 y obtuvo **4,755 s**. Se conservó el búfer original. [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
 
 ### Contingencia en el navegador
+
+El ajuste funcional posterior para RNF-03 pasó 33 pruebas Java y 9 del mapa simulado.
 
 | Escenario en Chromium | Resultado local |
 |---|---|
