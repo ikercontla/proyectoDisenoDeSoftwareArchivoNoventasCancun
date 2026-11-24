@@ -27,6 +27,7 @@ export function crearProveedorGoogle({ clave, idMapa }) {
 
 /** @param {import('./mapa-vista.js').SolicitudMapa} solicitud */
 function renderizar(maps, idMapa, solicitud) {
+  solicitud.montado();
   const limites = new maps.LatLngBounds();
   const mapa = new maps.Map(solicitud.contenedor, {
     center: { lat: 21.1619, lng: -86.8515 },
@@ -46,8 +47,7 @@ function renderizar(maps, idMapa, solicitud) {
       info.open({ map: mapa, anchor: marcador });
     });
   }
-  solicitud.montado();
+  maps.event.addListenerOnce(mapa, 'tilesloaded', solicitud.listo);
   if (solicitud.puntos.length > 1) mapa.fitBounds(limites, 72);
   else if (solicitud.puntos.length === 1) mapa.setCenter(limites.getCenter());
-  maps.event.addListenerOnce(mapa, 'tilesloaded', solicitud.listo);
 }

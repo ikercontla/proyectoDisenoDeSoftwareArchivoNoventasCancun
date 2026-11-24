@@ -20,7 +20,7 @@
     No se encontraron locaciones que coincidan con la búsqueda
   </p>
   <section class="explorador" aria-label="Explorar por locación">
-    <div class="mapa-panel" data-mapa th:attr="data-key=${mapaClave},data-map-id=${mapaId}" hidden>
+    <div class="mapa-panel cargando" data-mapa th:attr="data-key=${mapaClave},data-map-id=${mapaId}" hidden>
       <div class="mapa" aria-label="Mapa interactivo de locaciones"></div>
     </div>
     <section class="catalogo" aria-labelledby="titulo-catalogo">

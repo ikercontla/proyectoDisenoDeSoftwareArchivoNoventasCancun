@@ -10,7 +10,7 @@
  * @property {HTMLElement} contenedor
  * @property {PuntoDelMapa[]} puntos
  * @property {() => boolean} activo Indica si todavía se puede montar el mapa.
- * @property {() => void} montado Muestra el contenedor antes de ajustar sus límites.
+ * @property {() => void} montado Da tamaño al contenedor antes de ajustar sus límites.
  * @property {() => void} listo Indica que terminó de cargar el mapa.
  * @property {() => void} fallar Activa la vista alternativa.
  */
@@ -27,18 +27,21 @@
  */
 export function prepararMapa(panel, estado, proveedor) {
   let cancelado = false;
-  const mostrarCatalogo = () => {
+  const espera = window.setTimeout(() => {
+    estado.textContent = 'El mapa tarda en cargar. Puedes explorar las locaciones en el catálogo.';
+  }, 800);
+  const fallar = () => {
+    window.clearTimeout(espera);
     cancelado = true;
     panel.hidden = true;
     estado.hidden = false;
     estado.textContent = 'El mapa no está disponible. Puedes explorar las locaciones en el catálogo.';
   };
-  const espera = window.setTimeout(mostrarCatalogo, 5000);
-  const fallar = () => {
-    window.clearTimeout(espera);
-    mostrarCatalogo();
-  };
   window.addEventListener('offline', fallar);
+  if (!window.navigator.onLine) {
+    fallar();
+    return;
+  }
 
   proveedor.cargar({
     contenedor: panel.querySelector('.mapa'),
@@ -50,6 +53,7 @@ export function prepararMapa(panel, estado, proveedor) {
     listo: () => {
       if (cancelado) return;
       window.clearTimeout(espera);
+      panel.classList.remove('cargando');
       estado.hidden = true;
     },
     fallar,

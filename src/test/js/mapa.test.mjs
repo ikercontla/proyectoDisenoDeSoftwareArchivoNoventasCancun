@@ -4,6 +4,7 @@ import { crearProveedorGoogle } from '../../main/resources/static/mapa-google.js
 import { prepararMapa } from '../../main/resources/static/mapa-vista.js';
 
 const avisoCatalogo = 'El mapa no está disponible. Puedes explorar las locaciones en el catálogo.';
+const avisoDemora = 'El mapa tarda en cargar. Puedes explorar las locaciones en el catálogo.';
 const parque = {
   titulo: 'Parque de las Palapas', descripcion: 'Ficha histórica.', href: '/locaciones/1',
   lat: '21.16132', lng: '-86.82869',
@@ -15,7 +16,11 @@ const palacio = {
 
 function entorno(t, locaciones) {
   const contenedor = {};
-  const panel = { hidden: true, dataset: {}, querySelector: () => contenedor };
+  const clases = new Set(['cargando']);
+  const panel = {
+    hidden: true, dataset: {}, querySelector: () => contenedor,
+    classList: { remove: (clase) => clases.delete(clase), contains: (clase) => clases.has(clase) },
+  };
   const estado = { hidden: false, textContent: 'Cargando el mapa…' };
   const scripts = [];
   const temporizadores = new Map();
@@ -27,6 +32,7 @@ function entorno(t, locaciones) {
       : { textContent: descripcion },
   }));
   const pruebaVentana = {
+    navigator: { onLine: true },
     setTimeout: (callback, ms) => {
       const id = Symbol();
       temporizadores.set(id, { callback, ms });
@@ -78,8 +84,10 @@ test('V-01a y V-12a: un proveedor simulado recibe los marcadores visibles y su f
   assert.deepEqual(solicitud.puntos.map((p) => p.posicion), [{ lat: 21.16185, lng: -86.82572 }]);
   solicitud.montado();
   assert.equal(ambiente.panel.hidden, false);
+  assert.equal(ambiente.panel.classList.contains('cargando'), true);
   assert.equal(ambiente.estado.hidden, false);
   solicitud.listo();
+  assert.equal(ambiente.panel.classList.contains('cargando'), false);
   assert.equal(ambiente.estado.hidden, true);
   assert.equal(ambiente.temporizadores.size, 0);
 
@@ -106,15 +114,48 @@ test('V-01b: un proveedor simulado falla y los eventos tardíos conservan el cat
   comprobarContingencia(ambiente, solicitud);
 });
 
-test('V-01b: la espera máxima se conserva en cinco segundos', (t) => {
+test('RNF-03: el catálogo avisa a los 800 ms si el proveedor no responde', (t) => {
   const ambiente = entorno(t, [parque]);
   const proveedor = proveedorSimulado();
   prepararMapa(ambiente.panel, ambiente.estado, proveedor);
   const [espera] = ambiente.temporizadores.values();
 
-  assert.equal(espera.ms, 5000);
+  assert.equal(espera.ms, 800);
   espera.callback();
-  comprobarContingencia(ambiente, proveedor.solicitud);
+  assert.equal(ambiente.panel.hidden, true);
+  assert.equal(ambiente.estado.hidden, false);
+  assert.equal(ambiente.estado.textContent, avisoDemora);
+  assert.equal(proveedor.solicitud.activo(), true);
+});
+
+test('RNF-03: la carga tardía recupera el mapa cuando llegan los mosaicos', (t) => {
+  const ambiente = entorno(t, [parque]);
+  const proveedor = proveedorSimulado();
+  prepararMapa(ambiente.panel, ambiente.estado, proveedor);
+  const solicitud = proveedor.solicitud;
+  const [espera] = ambiente.temporizadores.values();
+
+  solicitud.montado();
+  espera.callback();
+  assert.equal(ambiente.estado.textContent, avisoDemora);
+  assert.equal(ambiente.panel.classList.contains('cargando'), true);
+
+  solicitud.listo();
+  assert.equal(ambiente.panel.hidden, false);
+  assert.equal(ambiente.panel.classList.contains('cargando'), false);
+  assert.equal(ambiente.estado.hidden, true);
+});
+
+test('RNF-03: al iniciar sin conexión, el catálogo queda activo de inmediato', (t) => {
+  const ambiente = entorno(t, [parque]);
+  ambiente.ventana.navigator.onLine = false;
+  const proveedor = proveedorSimulado();
+  prepararMapa(ambiente.panel, ambiente.estado, proveedor);
+
+  assert.equal(ambiente.panel.hidden, true);
+  assert.equal(ambiente.estado.textContent, avisoCatalogo);
+  assert.equal(ambiente.temporizadores.size, 0);
+  assert.equal(proveedor.solicitud, undefined);
 });
 
 test('V-01b: la desconexión muestra el catálogo incluso después de montar el mapa', (t) => {
