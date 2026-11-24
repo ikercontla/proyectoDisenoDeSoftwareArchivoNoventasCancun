@@ -4,6 +4,8 @@ Equipo 03 · Archivo Noventas Cancún
 
 Los 24 casos funcionales conservaron sus entradas, sus resultados esperados y su método de verificación al pasar de `v1-antes` a `v2-refactorizado`. R-06 volvió a ejecutar esos casos en `v2.1-refactorizado`. [Verificación inicial](verificacion-v1.md) · [Suite inicial](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Suite refactorizada](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb/src/test/java/mx/archivonoventas/AceptacionTest.java)
 
+El [anexo de evidencia por caso](evidencia-casos.md) reúne las entradas, los resultados esperados y el antes y el después. La [salida de consola](salida-verificacion.txt) conserva las líneas de las tres ejecuciones etiquetadas.
+
 | Caso | Comprobación | v1-antes | v2-refactorizado y v2.1-refactorizado |
 |---|---|---|---|
 | V-01a | Java entrega coordenadas y enlaces. Con Google Maps simulado se confirmó la posición del marcador y la ficha al seleccionarlo. | Simulación y recursos | Simulación y recursos |

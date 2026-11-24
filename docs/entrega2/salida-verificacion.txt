@@ -1,0 +1,153 @@
+Archivo Noventas Cancún · Equipo 03
+Extractos de las ejecuciones por caso · Entrega 2
+
+Las líneas de Maven y Node.js se conservaron como aparecieron en consola.
+Los identificadores V-XX se añadieron para vincularlas con la matriz.
+Los resultados se cotejaron con JUnit XML. Los tiempos son de los métodos
+de prueba y no son mediciones de rendimiento del sistema.
+
+============================================================================
+v1-antes
+5d152e48257858de55c34d4d4ce5e8b36da68ecb
+============================================================================
+
+Maven Wrapper · verify -Dsurefire.reportFormat=plain -Dsurefire.useFile=false
+
+V-01a  [INFO] mx.archivonoventas.AceptacionTest.datosMapa -- Time elapsed: 0.029 s
+V-01b  [INFO] mx.archivonoventas.AceptacionTest.catalogoAlternativo -- Time elapsed: 1.833 s
+V-02a  [INFO] mx.archivonoventas.AceptacionTest.fichaDeLocacion -- Time elapsed: 0.047 s
+V-02b  [INFO] mx.archivonoventas.AceptacionTest.locacionesAusentes -- Time elapsed: 0.022 s
+V-03a  [INFO] mx.archivonoventas.AceptacionTest.descargaOriginal -- Time elapsed: 0.016 s
+V-03b  [INFO] mx.archivonoventas.AceptacionTest.descargaAusente(CapturedOutput) -- Time elapsed: 0.025 s
+V-04a  [INFO] mx.archivonoventas.AceptacionTest.aporteAnonimo -- Time elapsed: 0.036 s
+V-04b  [INFO] mx.archivonoventas.AceptacionTest.adjuntoInvalido -- Time elapsed: 0.445 s
+V-05a  [INFO] mx.archivonoventas.AceptacionTest.autenticacionExitosa -- Time elapsed: 0.085 s
+V-05b  [INFO] mx.archivonoventas.AceptacionTest.autenticacionFallida -- Time elapsed: 0.103 s
+V-06a  [INFO] mx.archivonoventas.AceptacionTest.aprobar -- Time elapsed: 0.201 s
+V-06b  [INFO] mx.archivonoventas.AceptacionTest.rechazar -- Time elapsed: 0.189 s
+V-07a  [INFO] mx.archivonoventas.AceptacionTest.lineaDelTiempo -- Time elapsed: 0.125 s
+V-07b  [INFO] mx.archivonoventas.AceptacionTest.cronologiaInsuficiente -- Time elapsed: 0.119 s
+V-08a  [INFO] mx.archivonoventas.AceptacionTest.zipDeOriginales -- Time elapsed: 0.204 s
+V-08b  [INFO] mx.archivonoventas.AceptacionTest.limiteZip -- Time elapsed: 0.664 s
+V-09a  [INFO] mx.archivonoventas.AceptacionTest.registrarLocacion -- Time elapsed: 0.179 s
+V-09b  [INFO] mx.archivonoventas.AceptacionTest.locacionInvalida -- Time elapsed: 0.171 s
+V-10a  [INFO] mx.archivonoventas.AceptacionTest.publicarDocumento -- Time elapsed: 0.174 s
+V-10b  [INFO] mx.archivonoventas.AceptacionTest.publicacionIncompleta -- Time elapsed: 0.128 s
+V-11a  [INFO] mx.archivonoventas.AceptacionTest.enlacesInternos -- Time elapsed: 0.120 s
+V-11b  [INFO] mx.archivonoventas.AceptacionTest.enlaceInactivo -- Time elapsed: 0.057 s
+V-12a  [INFO] mx.archivonoventas.AceptacionTest.buscarLocaciones -- Time elapsed: 0.028 s
+V-12b  [INFO] mx.archivonoventas.AceptacionTest.conservarFiltro -- Time elapsed: 0.019 s
+
+[INFO] Tests run: 25, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Google Maps simulado · Node.js
+
+V-01a simulada: coordenadas, ficha y enlace correctos.
+V-01b simulada: fallo de carga, panel oculto y catálogo alternativo.
+
+============================================================================
+v2-refactorizado
+3794ab15d404b6b7760d939cf596b43f0678dd75
+============================================================================
+
+Maven Wrapper · verify -Dsurefire.reportFormat=plain -Dsurefire.useFile=false
+
+V-01a  [INFO] mx.archivonoventas.AceptacionTest.datosMapa -- Time elapsed: 0.030 s
+V-01b  [INFO] mx.archivonoventas.AceptacionTest.catalogoAlternativo -- Time elapsed: 1.902 s
+V-02a  [INFO] mx.archivonoventas.AceptacionTest.fichaDeLocacion -- Time elapsed: 0.035 s
+V-02b  [INFO] mx.archivonoventas.AceptacionTest.locacionesAusentes -- Time elapsed: 0.017 s
+V-03a  [INFO] mx.archivonoventas.AceptacionTest.descargaOriginal -- Time elapsed: 0.011 s
+V-03b  [INFO] mx.archivonoventas.AceptacionTest.descargaAusente(CapturedOutput) -- Time elapsed: 0.022 s
+V-04a  [INFO] mx.archivonoventas.AceptacionTest.aporteAnonimo -- Time elapsed: 0.043 s
+V-04b  [INFO] mx.archivonoventas.AceptacionTest.adjuntoInvalido -- Time elapsed: 0.468 s
+V-05a  [INFO] mx.archivonoventas.AceptacionTest.autenticacionExitosa -- Time elapsed: 0.084 s
+V-05b  [INFO] mx.archivonoventas.AceptacionTest.autenticacionFallida -- Time elapsed: 0.082 s
+V-06a  [INFO] mx.archivonoventas.AceptacionTest.aprobar -- Time elapsed: 0.209 s
+V-06b  [INFO] mx.archivonoventas.AceptacionTest.rechazar -- Time elapsed: 0.185 s
+V-07a  [INFO] mx.archivonoventas.AceptacionTest.lineaDelTiempo -- Time elapsed: 0.100 s
+V-07b  [INFO] mx.archivonoventas.AceptacionTest.cronologiaInsuficiente -- Time elapsed: 0.099 s
+V-08a  [INFO] mx.archivonoventas.AceptacionTest.zipDeOriginales -- Time elapsed: 0.115 s
+V-08b  [INFO] mx.archivonoventas.AceptacionTest.limiteZip -- Time elapsed: 0.721 s
+V-09a  [INFO] mx.archivonoventas.AceptacionTest.registrarLocacion -- Time elapsed: 0.164 s
+V-09b  [INFO] mx.archivonoventas.AceptacionTest.locacionInvalida -- Time elapsed: 0.151 s
+V-10a  [INFO] mx.archivonoventas.AceptacionTest.publicarDocumento -- Time elapsed: 0.203 s
+V-10b  [INFO] mx.archivonoventas.AceptacionTest.publicacionIncompleta -- Time elapsed: 0.099 s
+V-11a  [INFO] mx.archivonoventas.AceptacionTest.enlacesInternos -- Time elapsed: 0.115 s
+V-11b  [INFO] mx.archivonoventas.AceptacionTest.enlaceInactivo -- Time elapsed: 0.047 s
+V-12a  [INFO] mx.archivonoventas.AceptacionTest.buscarLocaciones -- Time elapsed: 0.019 s
+V-12b  [INFO] mx.archivonoventas.AceptacionTest.conservarFiltro -- Time elapsed: 0.016 s
+
+[INFO] Tests run: 31, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Google Maps simulado · Node.js
+
+✔ V-01a y V-12a: un proveedor simulado recibe los marcadores visibles y su ficha (3.8226ms)
+✔ V-01b: un proveedor simulado falla y los eventos tardíos conservan el catálogo (0.3844ms)
+✔ V-01b: la espera máxima se conserva en cinco segundos (0.6764ms)
+✔ V-01b: la desconexión muestra el catálogo incluso después de montar el mapa (0.3593ms)
+✔ V-01a: el módulo de Google conserva opciones, marcadores, encuadre y ficha (0.9933ms)
+✔ V-01b: el módulo de Google comunica un error de carga a la vista (0.5451ms)
+✔ Sin clave, el módulo de entrada deja disponible el catálogo sin solicitar el proveedor (2.6492ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.9371
+
+============================================================================
+v2.1-refactorizado
+5ad3f7b4344683ab942bd041aa08e0bb39680c06
+============================================================================
+
+Maven Wrapper · verify -Dsurefire.reportFormat=plain -Dsurefire.useFile=false
+
+V-01a  [INFO] mx.archivonoventas.AceptacionTest.datosMapa -- Time elapsed: 0.032 s
+V-01b  [INFO] mx.archivonoventas.AceptacionTest.catalogoAlternativo -- Time elapsed: 1.781 s
+V-02a  [INFO] mx.archivonoventas.AceptacionTest.fichaDeLocacion -- Time elapsed: 0.039 s
+V-02b  [INFO] mx.archivonoventas.AceptacionTest.locacionesAusentes -- Time elapsed: 0.016 s
+V-03a  [INFO] mx.archivonoventas.AceptacionTest.descargaOriginal -- Time elapsed: 0.016 s
+V-03b  [INFO] mx.archivonoventas.AceptacionTest.descargaAusente(CapturedOutput) -- Time elapsed: 0.022 s
+V-04a  [INFO] mx.archivonoventas.AceptacionTest.aporteAnonimo -- Time elapsed: 0.050 s
+V-04b  [INFO] mx.archivonoventas.AceptacionTest.adjuntoInvalido -- Time elapsed: 0.431 s
+V-05a  [INFO] mx.archivonoventas.AceptacionTest.autenticacionExitosa -- Time elapsed: 0.103 s
+V-05b  [INFO] mx.archivonoventas.AceptacionTest.autenticacionFallida -- Time elapsed: 0.104 s
+V-06a  [INFO] mx.archivonoventas.AceptacionTest.aprobar -- Time elapsed: 0.256 s
+V-06b  [INFO] mx.archivonoventas.AceptacionTest.rechazar -- Time elapsed: 0.242 s
+V-07a  [INFO] mx.archivonoventas.AceptacionTest.lineaDelTiempo -- Time elapsed: 0.127 s
+V-07b  [INFO] mx.archivonoventas.AceptacionTest.cronologiaInsuficiente -- Time elapsed: 0.117 s
+V-08a  [INFO] mx.archivonoventas.AceptacionTest.zipDeOriginales -- Time elapsed: 0.098 s
+V-08b  [INFO] mx.archivonoventas.AceptacionTest.limiteZip -- Time elapsed: 0.907 s
+V-09a  [INFO] mx.archivonoventas.AceptacionTest.registrarLocacion -- Time elapsed: 0.141 s
+V-09b  [INFO] mx.archivonoventas.AceptacionTest.locacionInvalida -- Time elapsed: 0.151 s
+V-10a  [INFO] mx.archivonoventas.AceptacionTest.publicarDocumento -- Time elapsed: 0.184 s
+V-10b  [INFO] mx.archivonoventas.AceptacionTest.publicacionIncompleta -- Time elapsed: 0.136 s
+V-11a  [INFO] mx.archivonoventas.AceptacionTest.enlacesInternos -- Time elapsed: 0.117 s
+V-11b  [INFO] mx.archivonoventas.AceptacionTest.enlaceInactivo -- Time elapsed: 0.061 s
+V-12a  [INFO] mx.archivonoventas.AceptacionTest.buscarLocaciones -- Time elapsed: 0.027 s
+V-12b  [INFO] mx.archivonoventas.AceptacionTest.conservarFiltro -- Time elapsed: 0.016 s
+
+[INFO] Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
+[INFO] BUILD SUCCESS
+
+Google Maps simulado · Node.js
+
+✔ V-01a y V-12a: un proveedor simulado recibe los marcadores visibles y su ficha (3.4383ms)
+✔ V-01b: un proveedor simulado falla y los eventos tardíos conservan el catálogo (0.4772ms)
+✔ V-01b: la espera máxima se conserva en cinco segundos (0.3473ms)
+✔ V-01b: la desconexión muestra el catálogo incluso después de montar el mapa (0.3711ms)
+✔ V-01a: el módulo de Google conserva opciones, marcadores, encuadre y ficha (0.8161ms)
+✔ V-01b: el módulo de Google comunica un error de carga a la vista (0.3312ms)
+✔ Sin clave, el módulo de entrada deja disponible el catálogo sin solicitar el proveedor (3.2257ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 107.6045
