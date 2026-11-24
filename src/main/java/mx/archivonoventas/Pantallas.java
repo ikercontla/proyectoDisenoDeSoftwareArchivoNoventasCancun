@@ -1,10 +1,13 @@
 package mx.archivonoventas;
 
+import static mx.archivonoventas.RespuestaWeb.formatosDeCarga;
+import static mx.archivonoventas.RespuestaWeb.irA;
+import static mx.archivonoventas.RespuestaWeb.pagina;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +24,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -30,25 +32,21 @@ class Pantallas {
     private static final Logger LOG = LoggerFactory.getLogger(Pantallas.class);
     private static final String PANEL = "/administracion/propuestas";
     private static final String FOLIO = "/administracion/propuestas/{folio:[a-f0-9-]{36}}";
-    private static final String ALTA_LOCACION = "/administracion/locaciones/nueva";
-    private static final String PUBLICAR_DOCUMENTO = "/administracion/documentos/nuevo";
     private final Archivo archivo;
     private final Propuestas propuestas;
     private final Sesiones sesiones;
     private final PaquetesZip paquetes;
-    private final Curaduria curaduria;
     private final String mapaClave;
     private final String mapaId;
     private final boolean cookieSegura;
 
-    Pantallas(Archivo archivo, Propuestas propuestas, Sesiones sesiones, PaquetesZip paquetes, Curaduria curaduria,
+    Pantallas(Archivo archivo, Propuestas propuestas, Sesiones sesiones, PaquetesZip paquetes,
               @Value("${archivo.maps-key}") String mapaClave, @Value("${archivo.maps-id}") String mapaId,
               @Value("${archivo.cookie-segura}") boolean cookieSegura) {
         this.archivo = archivo;
         this.propuestas = propuestas;
         this.sesiones = sesiones;
         this.paquetes = paquetes;
-        this.curaduria = curaduria;
         this.mapaClave = mapaClave;
         this.mapaId = mapaId;
         this.cookieSegura = cookieSegura;
@@ -171,43 +169,6 @@ class Pantallas {
         return pagina(modelo, "panel", "Propuestas ciudadanas", "admin");
     }
 
-    @GetMapping(ALTA_LOCACION)
-    String nuevaLocacion(Model modelo) {
-        return formularioLocacion(modelo, Map.of(), Map.of());
-    }
-
-    @PostMapping(ALTA_LOCACION)
-    String guardarLocacion(@RequestParam(defaultValue = "") String nombre, @RequestParam(defaultValue = "") String descripcion,
-                           @RequestParam(defaultValue = "") String latitud, @RequestParam(defaultValue = "") String longitud,
-                           Model modelo, HttpServletResponse res) {
-        try {
-            return irA(res, "/locaciones/" + curaduria.registrarLocacion(nombre, descripcion, latitud, longitud));
-        } catch (CamposInvalidos error) {
-            res.setStatus(422);
-            return formularioLocacion(modelo, Map.of("nombre", nombre, "descripcion", descripcion,
-                    "latitud", latitud, "longitud", longitud), error.campos());
-        }
-    }
-
-    @GetMapping(PUBLICAR_DOCUMENTO)
-    String nuevoDocumento(Model modelo) {
-        return formularioPublicacion(modelo, Map.of(), Map.of());
-    }
-
-    @PostMapping(PUBLICAR_DOCUMENTO)
-    String publicarDocumento(@RequestParam(defaultValue = "") String locacion, @RequestParam(defaultValue = "") String titulo,
-                             @RequestParam(defaultValue = "") String fecha, @RequestParam(defaultValue = "") String descripcion,
-                             @RequestParam(required = false) MultipartFile archivo, Model modelo, HttpServletResponse res)
-            throws IOException {
-        try {
-            return irA(res, "/documentos/" + curaduria.publicar(locacion, titulo, fecha, descripcion, archivo));
-        } catch (CamposInvalidos error) {
-            res.setStatus(422);
-            return formularioPublicacion(modelo, Map.of("locacion", locacion, "titulo", titulo,
-                    "fecha", fecha, "descripcion", descripcion), error.campos());
-        }
-    }
-
     @GetMapping(FOLIO)
     String propuesta(@PathVariable String folio, Model modelo) {
         return detalle(modelo, propuestas.buscar(folio), null);
@@ -253,17 +214,12 @@ class Pantallas {
 
     @ExceptionHandler(ErrorAplicacion.class)
     String error(ErrorAplicacion e, Model modelo, HttpServletResponse res) {
-        res.setStatus(e.estado());
-        modelo.addAttribute("mensaje", e.getMessage());
-        return pagina(modelo, "error", "Error " + e.estado(), "");
+        return RespuestaWeb.error(e, modelo, res);
     }
 
     @ExceptionHandler(MultipartException.class)
-    String adjuntoInvalido(MultipartException e, HttpServletRequest req, Model modelo, HttpServletResponse res) {
-        res.setStatus(e instanceof MaxUploadSizeExceededException ? 413 : 422);
-        if (req.getServletPath().equals(PUBLICAR_DOCUMENTO)) {
-            return formularioPublicacion(modelo, Map.of(), Map.of("archivo", Adjunto.ARCHIVO_INVALIDO));
-        }
+    String adjuntoInvalido(MultipartException e, Model modelo, HttpServletResponse res) {
+        res.setStatus(RespuestaWeb.estadoCarga(e));
         return formularioAporte(modelo, "", "", "", Adjunto.ARCHIVO_INVALIDO);
     }
 
@@ -281,27 +237,11 @@ class Pantallas {
         return partes.group(1).equals("locaciones") ? archivo.locacion(id) != null : archivo.documentoPublicado(id) != null;
     }
 
-    private static String formularioLocacion(Model modelo, Map<String, String> valores, Map<String, String> errores) {
-        modelo.addAttribute("valores", valores).addAttribute("errores", errores);
-        return pagina(modelo, "altaLocacion", "Registrar locación", "admin");
-    }
-
-    private String formularioPublicacion(Model modelo, Map<String, String> valores, Map<String, String> errores) {
-        modelo.addAttribute("valores", valores).addAttribute("errores", errores).addAttribute("locaciones", archivo.locaciones());
-        formatosDeCarga(modelo);
-        return pagina(modelo, "publicarDocumento", "Publicar documento", "admin");
-    }
-
     private String formularioAporte(Model modelo, String locacion, String descripcion, String fecha, String mensaje) {
         modelo.addAttribute("locaciones", archivo.locaciones()).addAttribute("seleccion", locacion)
                 .addAttribute("descripcion", descripcion).addAttribute("fecha", fecha).addAttribute("mensaje", mensaje);
         formatosDeCarga(modelo);
         return pagina(modelo, "aporte", "Aportar al archivo", "aportar");
-    }
-
-    private static void formatosDeCarga(Model modelo) {
-        modelo.addAttribute("formatosAceptados", Adjunto.extensionesAceptadas())
-                .addAttribute("ayudaFormatos", Adjunto.ayudaFormatos());
     }
 
     private static String detalle(Model modelo, PropuestaAporte propuesta, String mensaje) {
@@ -316,17 +256,6 @@ class Pantallas {
         } catch (NumberFormatException e) {
             return 0;
         }
-    }
-
-    private static String pagina(Model modelo, String vista, String titulo, String seccion) {
-        modelo.addAttribute("vista", vista).addAttribute("titulo", titulo).addAttribute("seccion", seccion);
-        return "layout";
-    }
-
-    private static String irA(HttpServletResponse res, String destino) {
-        res.setStatus(303);
-        res.setHeader(HttpHeaders.LOCATION, destino);
-        return null;
     }
 
     private String cookie(String token, int duracion) {

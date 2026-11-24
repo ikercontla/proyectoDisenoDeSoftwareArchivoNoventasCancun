@@ -362,6 +362,16 @@ class AceptacionTest {
     }
 
     @Test
+    void publicacionSobredimensionadaConservaElFormularioDeCuraduria() throws Exception {
+        int antes = db.queryForObject("SELECT COUNT(*) FROM documentos", Integer.class);
+        var r = multipart(PUBLICAR_DOCUMENTO, Map.of("locacion", "1", "titulo", "Prueba de tamaño",
+                "fecha", "1997", "descripcion", "Texto"), "original.pdf", new byte[25_000_001], iniciarSesion());
+        assertThat(r.statusCode()).isEqualTo(413);
+        assertThat(texto(r)).contains("Publicar documento", "error-archivo", "Debe adjuntar un archivo válido");
+        assertThat(db.queryForObject("SELECT COUNT(*) FROM documentos", Integer.class)).isEqualTo(antes);
+    }
+
+    @Test
     @DisplayName("V-11a · los enlaces internos llevan a una locación o a otro documento")
     void enlacesInternos() throws Exception {
         long destino = locacionPrueba("Destino de enlace");
