@@ -2,6 +2,10 @@
 
 Aplicación del Equipo 03 para consultar documentos por locación, recibir aportes ciudadanos y moderarlos. Esta rama cubre los 12 requisitos funcionales de la especificación. La etiqueta `base-must` conserva el commit con los seis requisitos Must. [Especificación funcional](docs/srs/seccion5_requerimientos_funcionales.md) · [Base Must en GitHub](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/base-must)
 
+## Entrega 2
+
+El PDF, el diagrama de clases editable y renderizado, y la evidencia de los 24 casos se reúnen en la [sección de entrega final](docs/entrega2/README.md).
+
 ## Ejecutar en local
 
 Requiere JDK 17 o superior. El servidor usa Java y Spring Boot, con plantillas HTML, CSS y SQLite. Maven Wrapper descarga Maven y las dependencias en la primera compilación.
@@ -46,5 +50,3 @@ El navegador usa un script de JavaScript para cargar Google Maps y mostrar las f
 La suite usa una base SQLite temporal y un servidor HTTP local de puerto efímero.
 
 Para ejecutar también las pruebas del proveedor de mapas simulado, usar Node.js 24 con `node --test src/test/js/mapa.test.mjs`.
-
-[Cierre técnico](docs/entrega2/cierre-tecnico.md) · [Verificación comparativa](docs/entrega2/verificacion-v2.md) · [Diagnóstico inicial](docs/entrega2/diagnostico-v1.md) · [Bitácora de refactorización](docs/entrega2/bitacora-refactorizacion.md)
