@@ -1,5 +1,5 @@
 ' Archivo Noventas Cancún · Equipo 03 · Entrega 2
-' Tres vistas complementarias del código etiquetado v2-refactorizado.
+' Cuatro vistas complementarias del código etiquetado v2.1-refactorizado.
 ' Azul: clase o módulo modificado. Verde: clase, tipo o módulo nuevo.
 
 @startuml dominio
@@ -16,14 +16,12 @@ title Archivo Noventas Cancún · Dominio y persistencia
 
 class Archivo #E3EDFF {
   - db : JdbcTemplate
+  - originales : Originales
   ~ locaciones() : List<Locacion>
   ~ locacion(id : long) : Locacion
   ~ documentos(locacionId : long) : List<Documento>
   ~ documentoPublicado(id : long) : Documento
   ~ incorporar(documento : Documento, folio : String) : long
-  ~ guardarOriginal(nombre : String, tipo : String, contenido : byte[]) : long
-  ~ original(id : long) : Original
-  ~ tieneOriginal(id : long) : boolean
   + cargarDemo() : void
 }
 
@@ -50,11 +48,7 @@ class Documento <<record>> #E3EDFF {
   + resumen() : String
 }
 
-class "Archivo.Original" as Original <<record>> {
-  - nombre : String
-  - tipo : String
-  - contenido : byte[]
-}
+class Originales <<repository>> #DFF5E7
 
 class FechaHistorica #DFF5E7 {
   - texto : String
@@ -101,6 +95,7 @@ class "Adjunto.FormatoOriginal" as FormatoOriginal <<record>> #DFF5E7 {
 class Propuestas #E3EDFF {
   - db : JdbcTemplate
   - archivo : Archivo
+  - originales : Originales
   ~ listar() : List<PropuestaAporte>
   ~ buscar(folio : String) : PropuestaAporte
   ~ existe(folio : String) : boolean
@@ -113,6 +108,7 @@ class Propuestas #E3EDFF {
 class Curaduria #E3EDFF {
   - db : JdbcTemplate
   - archivo : Archivo
+  - originales : Originales
   + registrarLocacion(nombre : String, descripcion : String, latitud : String, longitud : String) : long
   + publicar(locacion : String, titulo : String, fecha : String, descripcion : String, archivo : MultipartFile) : long
 }
@@ -122,10 +118,9 @@ class Cronologia #E3EDFF {
 }
 
 class PaquetesZip #E3EDFF {
-  - db : JdbcTemplate
-  - origen : DataSource
-  ~ preparar(locacion : long) : List<Entrada>
-  ~ escribir(entradas : List<Entrada>, destino : OutputStream) : void
+  - originales : Originales
+  ~ preparar(locacion : long) : List<Originales.Entrada>
+  ~ escribir(entradas : List<Originales.Entrada>, destino : OutputStream) : void
 }
 
 class TextoVinculado <<record>> {
@@ -142,13 +137,15 @@ Documento --> "0..1" FechaHistorica
 Documento ..> TextoVinculado : resume
 Archivo ..> Locacion
 Archivo ..> Documento
-Archivo ..> Original : lee binarios
+Archivo --> Originales : carga demo
 Archivo ..> FechaHistorica : serializa
 Propuestas --> Archivo
+Propuestas --> Originales
 Propuestas ..> PropuestaAporte
 Propuestas ..> Adjunto
 Propuestas ..> FechaHistorica
 Curaduria --> Archivo
+Curaduria --> Originales
 Curaduria ..> Adjunto
 Curaduria ..> Documento
 Curaduria ..> FechaHistorica
@@ -156,6 +153,7 @@ Cronologia ..> Documento
 Cronologia ..> FechaHistorica : día de orden
 Adjunto ..> FormatoOriginal : catálogo estático
 PaquetesZip ..> Adjunto : nombreSeguro
+PaquetesZip --> Originales
 
 legend bottom
   |= Color |= Estado desde v1-antes |
@@ -182,6 +180,7 @@ title Archivo Noventas Cancún · Controladores HTTP
 
 class Pantallas <<controller>> #E3EDFF {
   - archivo : Archivo
+  - originales : Originales
   - propuestas : Propuestas
   - sesiones : Sesiones
   - paquetes : PaquetesZip
@@ -229,6 +228,7 @@ class Sesiones {
 }
 
 class Archivo #E3EDFF
+class Originales <<repository>> #DFF5E7
 class Propuestas #E3EDFF
 class Cronologia #E3EDFF
 class Curaduria #E3EDFF
@@ -238,6 +238,7 @@ class BusquedaLocaciones <<record>>
 
 Web --> Sesiones
 Pantallas --> Archivo
+Pantallas --> Originales : descargas
 Pantallas --> Propuestas
 Pantallas --> Sesiones
 Pantallas --> PaquetesZip
@@ -260,6 +261,67 @@ end note
 legend bottom
   <back:#DFF5E7>Verde</back> nuevo · <back:#E3EDFF>Azul</back> modificado
   Se muestran las operaciones representativas.
+endlegend
+@enduml
+
+@startuml originales
+!pragma layout smetana
+skinparam shadowing false
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName Calibri
+skinparam classAttributeIconSize 0
+skinparam classBorderColor #34516D
+skinparam classBackgroundColor #F7F9FC
+hide empty members
+hide circle
+title Archivo Noventas Cancún · Acceso a originales
+
+class Originales <<repository>> #DFF5E7 {
+  - db : JdbcTemplate
+  - origen : DataSource
+  ~ guardar(nombre : String, tipo : String, contenido : byte[]) : long
+  ~ buscar(id : long) : Original
+  ~ disponible(id : long) : boolean
+  ~ entradasParaLocacion(locacion : long) : List<Entrada>
+  ~ conLote(operacion : OperacionLote) : void
+}
+class "Originales.Original" as Original <<record>> #DFF5E7 {
+  - nombre : String
+  - tipo : String
+  - contenido : byte[]
+}
+class "Originales.Entrada" as Entrada <<record>> #DFF5E7 {
+  - binario : long
+  - nombre : String
+  - tamano : Long
+}
+interface "Originales.OperacionLote" as OperacionLote <<interface>> #DFF5E7 {
+  + ejecutar(lote : LectorLote) : void
+}
+interface "Originales.LectorLote" as LectorLote <<interface>> #DFF5E7 {
+  + leer(id : long, receptor : Receptor) : void
+}
+interface "Originales.Receptor" as Receptor <<interface>> #DFF5E7 {
+  + leer(original : InputStream) : void
+}
+class PaquetesZip #E3EDFF
+class Pantallas #E3EDFF
+
+Pantallas --> Originales : descarga individual
+PaquetesZip --> Originales : descarga en lote
+Originales ..> Original
+Originales ..> Entrada
+Originales ..> OperacionLote
+OperacionLote ..> LectorLote
+LectorLote ..> Receptor
+
+note bottom of LectorLote
+  La conexión y la consulta se reutilizan por lote.
+  El flujo de cada binario vive durante su callback.
+end note
+
+legend bottom
+  <back:#DFF5E7>Verde</back> nuevo · <back:#E3EDFF>Azul</back> modificado
 endlegend
 @enduml
 

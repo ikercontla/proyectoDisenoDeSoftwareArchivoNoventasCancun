@@ -2,9 +2,9 @@
 
 Equipo 03 · Archivo Noventas Cancún
 
-Los 24 casos funcionales conservaron sus entradas, sus resultados esperados y su método de verificación. Cada caso se cotejó con los informes de Maven de ambas revisiones. [Verificación inicial](verificacion-v1.md) · [Suite inicial](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Suite refactorizada](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/test/java/mx/archivonoventas/AceptacionTest.java)
+Los 24 casos funcionales conservaron sus entradas, sus resultados esperados y su método de verificación al pasar de `v1-antes` a `v2-refactorizado`. R-06 volvió a ejecutar esos casos en `v2.1-refactorizado`. [Verificación inicial](verificacion-v1.md) · [Suite inicial](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/test/java/mx/archivonoventas/AceptacionTest.java) · [Suite refactorizada](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb/src/test/java/mx/archivonoventas/AceptacionTest.java)
 
-| Caso | Comprobación | v1-antes | v2-refactorizado |
+| Caso | Comprobación | v1-antes | v2-refactorizado y v2.1-refactorizado |
 |---|---|---|---|
 | V-01a | Java entrega coordenadas y enlaces. Con Google Maps simulado se confirmó la posición del marcador y la ficha al seleccionarlo. | Simulación y recursos | Simulación y recursos |
 | V-01b | La página muestra las locaciones activas. Al disparar el error del script se ocultó el mapa y se mostró el aviso del catálogo. | Simulación y recursos | Simulación y recursos |
@@ -43,16 +43,28 @@ Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del m
 | R-03 | 27 pruebas, 0 fallos, 0 errores | 7 de 7 |
 | R-04 | 30 pruebas, 0 fallos, 0 errores | 7 de 7 |
 | R-05 | 31 pruebas, 0 fallos, 0 errores | 7 de 7 |
+| R-06 | 33 pruebas, 0 fallos, 0 errores | 7 de 7 |
 
 En la verificación final se obtuvo:
 
-    Tests run: 31, Failures: 0, Errors: 0, Skipped: 0
+    Tests run: 33, Failures: 0, Errors: 0, Skipped: 0
     BUILD SUCCESS
     tests 7 / pass 7 / fail 0
 
-Las pruebas adicionales cubren precisión de fechas, firmas de archivos, coherencia de formularios y el error de tamaño en publicación directa. Para reproducirlas en Windows desde la raíz del repositorio, ejecutar:
+Las pruebas adicionales cubren precisión de fechas, firmas de archivos, coherencia de formularios, tamaño en publicación directa, original ausente en la descarga en lote y reversión de la escritura de un original. Se reproducen en Windows desde la raíz del repositorio con estos comandos.
 
     .\mvnw.cmd verify
     node --test src/test/js/mapa.test.mjs
 
 El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. [Bitácora](bitacora-refactorizacion.md) · [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/test/js/mapa.test.mjs)
+
+## Requisitos no funcionales
+
+| Requisito | Evidencia y estado |
+|---|---|
+| RNF-01 · Mapa con hasta 100 marcadores | Falta medir el LCP de hasta 2,5 s con Google Maps real, Lighthouse y las condiciones de red del SRS. Se requiere una clave autorizada. |
+| RNF-02 · Rendimiento del ZIP | La medición local de R-06 obtuvo P95 de **4,748 s**. El objetivo de P95 de hasta 4 s sigue pendiente. |
+| RNF-03 · Contingencia de Google Maps | El catálogo y los errores se verificaron con simulaciones. Falta cronometrar el bloqueo de Google Maps en navegador. Si el proveedor no responde ni comunica un error, el aviso de contingencia se activa a los **5 s**, por encima del plazo de 1 s. |
+| RNF-03 · Disponibilidad mensual | Falta medir el 99,5 % con un entorno desplegado y sondas cada 60 s durante un mes. |
+
+La prueba local de RNF-02 usó 50 documentos sintéticos de 2 MB, una solicitud de calentamiento y diez descargas simultáneas por HTTP en localhost. Midió desde el envío hasta recibir el ZIP completo. El P95 por rango más cercano fue **4,859 s** en R-05 y **4,748 s** en R-06. La [medición inicial](verificacion-v1.md) obtuvo **3,898 s** en una ejecución anterior. Se ensayó un búfer de compresión de 64 KiB en una copia de R-06 y obtuvo **4,755 s**. Se conservó el búfer original. [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)

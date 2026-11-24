@@ -16,6 +16,8 @@ El punto de partida es [`v1-antes`](https://github.com/ikercontla/proyectoDiseno
 
 La [bitácora](bitacora-refactorizacion.md) registra los cambios aplicados y su evidencia. El orden coloca primero el proveedor externo y luego los ajustes que usan `Adjunto` y el formato de fecha. [Catálogo de técnicas de Fowler](https://refactoring.com/catalog/) · [Extract Function](https://refactoring.com/catalog/extractFunction.html) · [Replace Primitive with Object](https://refactoring.com/catalog/replacePrimitiveWithObject.html)
 
+Tras cerrar los cinco cambios iniciales en `v2-refactorizado`, R-06 atendió H-04 al reunir el acceso a los binarios en `Originales`. El [cierre técnico](cierre-tecnico.md) recoge las métricas, el UML y el escenario DEP-02 de la revisión adicional.
+
 ## Verificación y evidencia por cambio
 
 1. Ejecutar `mvnw verify` desde `v1-antes` y reutilizar las entradas y resultados esperados de la [matriz de verificación](verificacion-v1.md).

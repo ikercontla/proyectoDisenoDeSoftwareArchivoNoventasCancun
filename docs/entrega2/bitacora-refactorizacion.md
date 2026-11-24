@@ -11,6 +11,7 @@ La comparación parte de [`v1-antes`](https://github.com/ikercontla/proyectoDise
 | R-03 | H-06 | Replace Primitive with Object · Organización de datos | `FechaHistorica` conserva el texto y calcula el día de orden. SQLite sigue guardando las mismas cadenas. | [`1951465`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/19514655527547283b1d308895a45bd87befc046) | V-04a/b, V-06a/b, V-07a/b, V-10a/b y dos pruebas de fechas. |
 | R-04 | H-05 · OCP | Extract Function · Composición de métodos | El catálogo de formatos alimenta las firmas, el atributo `accept`, la ayuda y el mensaje de error. | [`e88f6f6`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/e88f6f61dad25a750586fbe66552f1787cba1a8a) | V-03a/b, V-04a/b, V-10a/b, ambas vistas y las cuatro firmas. |
 | R-05 | H-03 · SRP | Extract Class | Las altas y publicaciones directas pasan a `PantallasCuraduria`. `RespuestaWeb` concentra la preparación de vistas, redirecciones y errores compartidos. | [`f2dcba8`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/f2dcba8e4257ce94fe83264a4b536ea66003ab78) | V-02a/b, V-05a/b, V-06a/b, V-09a/b, V-10a/b y carga sobredimensionada. |
+| R-06 | H-04 · Acoplamiento al almacenamiento | Extract Class · Move Function | `Originales` reúne la escritura, descarga y lectura en lote del contenido binario. `PaquetesZip` valida el tamaño y genera el ZIP. | [`48c1ea6`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb) | V-03a/b, V-04a/b, V-06a/b, V-08a/b, V-10a/b, original ausente y reversión de escritura. |
 
 ## R-01 · Aislar el proveedor de mapas
 
@@ -122,6 +123,26 @@ class PantallasCuraduria {
 ```
 
 Maven pasó 31 pruebas y el mapa simulado pasó 7. La publicación de un binario que supera 25 MB responde 413, conserva el formulario de curaduría y mantiene el conteo de documentos. [Controlador antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/e88f6f61dad25a750586fbe66552f1787cba1a8a/src/main/java/mx/archivonoventas/Pantallas.java) · [Controlador después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/main/java/mx/archivonoventas/PantallasCuraduria.java) · [Respuestas compartidas](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/main/java/mx/archivonoventas/RespuestaWeb.java)
+
+## R-06 · Centralizar el acceso a originales
+
+**Antes.** `Archivo` leía y escribía el contenido de los originales. `PaquetesZip` consultaba la misma columna para abrir cada archivo de la descarga en lote.
+
+```java
+var consulta = conexion.prepareStatement("SELECT contenido FROM binarios WHERE id = ?");
+```
+
+**Después.** `Originales` prepara y reutiliza la consulta en el lote. `PaquetesZip` recibe el flujo de cada original y lo copia a su entrada del ZIP.
+
+```java
+lote.leer(entrada.binario(), original -> {
+    zip.putNextEntry(new ZipEntry(nombreDisponible(entrada.nombre(), usados)));
+    original.transferTo(zip);
+    zip.closeEntry();
+});
+```
+
+Maven pasó 33 pruebas y el mapa simulado pasó 7. Se conservaron los originales, nombres y límite de 100 MB. Las pruebas nuevas comprobaron el 404 sin cabecera de descarga cuando falta un original y la reversión de la escritura dentro de una transacción. [ZIP antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v2-refactorizado/src/main/java/mx/archivonoventas/PaquetesZip.java) · [ZIP después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb/src/main/java/mx/archivonoventas/PaquetesZip.java) · [Acceso a originales](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb/src/main/java/mx/archivonoventas/Originales.java)
 
 [Verificación comparativa de los 24 casos](verificacion-v2.md) · [Métricas, UML y prueba de cambio](cierre-tecnico.md)
 
