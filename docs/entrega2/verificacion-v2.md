@@ -62,11 +62,21 @@ El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. Las
 | Requisito | Evidencia y estado |
 |---|---|
 | RNF-01 · Mapa con hasta 100 marcadores | Trabajo futuro. Medir el LCP con Google Maps real y una clave autorizada. Objetivo de hasta 2,5 s bajo las condiciones de red del SRS. |
-| RNF-02 · Rendimiento del ZIP | La medición local de R-06 obtuvo P95 de **4,748 s**. El objetivo de P95 de hasta 4 s sigue pendiente. |
+| RNF-02 · Rendimiento del ZIP | Cumple en las tres corridas locales de cierre. P95 de **3,839 s**, **3,590 s** y **3,726 s**, con objetivo de hasta 4 s. La medición histórica de R-06 obtuvo 4,748 s. |
 | RNF-03 · Contingencia de Google Maps | El catálogo está disponible desde la primera vista. Se verificó en Chromium que el aviso aparece en menos de 1 s al bloquear la solicitud o dejarla sin respuesta. El mapa aparece si después termina de cargar. |
 | RNF-03 · Disponibilidad mensual | El 99,5 % se registra como supuesto operativo para esta entrega, sin verificación. Comprobarlo en operación requiere un entorno desplegado y sondas cada 60 s durante el periodo mensual. |
 
-La prueba local de RNF-02 usó 50 documentos sintéticos de 2 MB, una solicitud de calentamiento y diez descargas simultáneas por HTTP en localhost. Midió desde el envío hasta recibir el ZIP completo. El P95 por rango más cercano fue **4,859 s** en R-05 y **4,748 s** en R-06. La [medición inicial](verificacion-v1.md) obtuvo **3,898 s** en una ejecución anterior. Se ensayó un búfer de compresión de 64 KiB en una copia de R-06 y obtuvo **4,755 s**. Se conservó el búfer original. [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
+### Prueba de carga del ZIP
+
+Cada corrida local usó 50 documentos sintéticos de 2 MB, una solicitud de calentamiento y diez descargas simultáneas por HTTP en localhost. Se midió el tiempo desde el envío hasta recibir el ZIP completo. El P95 se calculó por rango más cercano.
+
+| Corrida de cierre | P95 | Objetivo ≤ 4,0 s |
+|---|---:|---|
+| 1 | 3,839 s | Cumple |
+| 2 | 3,590 s | Cumple |
+| 3 | 3,726 s | Cumple |
+
+Las corridas de cierre usaron el código del commit [`846d9ad`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/846d9ad1a650d09d0617057965e66079ddbc4b78). La medición histórica obtuvo **3,898 s** en la versión inicial, **4,859 s** en R-05 y **4,748 s** en R-06. Un ensayo aislado con un búfer de 64 KiB obtuvo **4,755 s** y se conservó el búfer original. Los tiempos muestran la variación entre ejecuciones locales. [Medición inicial](verificacion-v1.md) · [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)
 
 ### Contingencia en el navegador
 

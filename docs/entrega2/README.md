@@ -15,6 +15,8 @@ Equipo 03 · Diseño de Software
 | Antes | [`v1-antes`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/v1-antes) · Implementación inicial de los 12 requisitos funcionales. |
 | Después | [`v2.1-refactorizado`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/v2.1-refactorizado) · Código con las seis refactorizaciones. |
 
+La etiqueta [`v2-refactorizado`](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/tree/v2-refactorizado) conserva R-01 a R-05 y cumple el nombre solicitado por la guía. El informe usa `v2.1-refactorizado` como única versión de después para incluir también R-06.
+
 El código actual de la rama incluye también el ajuste de contingencia del mapa. [Código fuente](../../src) · [Instrucciones para ejecutar en local](../../README.md#ejecutar-en-local)
 
 ## Evidencia y diseño

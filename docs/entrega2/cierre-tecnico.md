@@ -49,14 +49,13 @@ El [diseño conceptual de la Entrega 1](../../diagramas/Equipo3_Entrega1_Diagram
 
 | Escenario | Origen | Clases a modificar antes | Clases a modificar después |
 |---|---|---|---|
-| El acervo pasa a admitir un año aproximado escrito como `ca. 1995`. Tiene que conservar el prefijo al presentar y persistir el dato, y ordenar en el primer día del año de referencia. | SUP-01 | **2**. `PropuestaAporte` debe aceptar y validar el prefijo, mientras `Documento` debe reconocerlo para el orden cronológico. | **1**. `FechaHistorica` centraliza la interpretación y el día de orden. Los flujos de ingreso y cronología usan sus operaciones existentes. |
-| Se cambia la implementación que escribe, busca y lee el contenido binario, conservando la identidad y los metadatos de cada original. | DEP-02 | **2**. `Archivo` y `PaquetesZip` escriben o leen el contenido. | **1**. `Originales` concentra las operaciones sobre el contenido. |
+| Si el servidor carece de un volumen persistente, guardar los binarios en almacenamiento externo y conservar los identificadores y metadatos en la base de datos persistente. | DEP-02 | **2**. `Archivo` escribe binarios y atiende la descarga individual. `PaquetesZip` consulta sus tamaños y abre los binarios del lote. | **1**. `Originales` concentra la escritura, la consulta de tamaños y la lectura individual y en lote. |
 
-Se rastrearon las llamadas desde los formularios hasta la persistencia y el orden cronológico. Si se actualiza la ayuda para enseñar el nuevo formato, se edita la misma plantilla en ambas revisiones. El escenario mide el alcance del cambio. El formato vigente conserva año, año-mes y fecha completa. [SUP-01](../srs/seccion4_supuestos_dependencias.md) · [Antes](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/v1-antes/src/main/java/mx/archivonoventas/PropuestaAporte.java#L51) · [Después](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/main/java/mx/archivonoventas/FechaHistorica.java)
+Se rastrearon la carga, la descarga individual y la generación del ZIP. El conteo abarca las clases que accederían al contenido binario si se conserva el contrato de cada operación. La migración de la base de datos, la configuración de infraestructura y la consistencia con el almacenamiento externo se revisarían por separado. [DEP-02](../srs/seccion4_supuestos_dependencias.md) · [Cambio de acceso a originales](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb)
+
+### Prueba del contrato de mapas
 
 Para DEP-01, el caso de contrato sustituyó el proveedor de Google por un doble que recibió los marcadores y comunicó carga y fallo. La vista conservó sus fichas y el catálogo. Ese ensayo comprueba el punto de sustitución de R-01 en el navegador. [Pruebas del mapa](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/blob/f2dcba8e4257ce94fe83264a4b536ea66003ab78/src/test/js/mapa.test.mjs)
-
-Para DEP-02 se rastrearon la escritura, la descarga individual y la generación del ZIP. El conteo considera cambios al acceso del contenido. Una migración de datos o de transacciones requeriría su propia revisión. [DEP-02](../srs/seccion4_supuestos_dependencias.md) · [Cambio de acceso a originales](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/48c1ea64be8fa20d5c0c04675df03ff50d8f67eb)
 
 ## Variante descartada
 
