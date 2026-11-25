@@ -42,4 +42,6 @@ Los 24 casos pasaron en ambas versiones. Cada resultado se cotejó con el inform
 
 ## Alcance de la prueba del mapa
 
-Las salidas de Node.js para V-01a y V-01b están en el registro de cada revisión. El ajuste posterior de contingencia de RNF-03 se documenta con su prueba en Chromium. La medición de carga con Google Maps real sigue pendiente de una clave autorizada. [Contingencia en el navegador](verificacion-v2.md#contingencia-en-el-navegador)
+La Entrega 2 verifica el mapa con un SDK simulado. Se repitieron V-01a y V-01b con los mismos dos registros en `v1-antes` y `v2.1-refactorizado`. Se comprobaron las coordenadas, las fichas y sus enlaces, y la vista de catálogo al fallar la carga. Para reproducir la comparación con Node.js 24, ejecutar `node docs/entrega2/verificar-mapa-comparado.mjs` desde la raíz del repositorio con ambas etiquetas disponibles.
+
+El ajuste posterior de RNF-03 se comprobó en Chromium con la solicitud de Google interceptada. La validación del servicio real y la medición del mapa con hasta 100 marcadores quedan como trabajo futuro. [Salida de consola](salida-verificacion.txt) · [Contingencia en Chromium](verificacion-v2.md#contingencia-en-el-navegador) · [Trabajo futuro](verificacion-v2.md#trabajo-futuro-con-google-maps)

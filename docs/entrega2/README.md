@@ -22,4 +22,5 @@ El código actual de la rama incluye también el ajuste de contingencia del mapa
 - [Diagnóstico y cálculo inicial de CBO y LCOM](diagnostico-v1.md) · [Plan de refactorización](plan-fase-2.md).
 - [Bitácora, commits y fragmentos antes y después](bitacora-refactorizacion.md).
 - [Matriz de los 24 casos](evidencia-casos.md) · [Salida de consola por caso](salida-verificacion.txt) · [Verificación comparativa y estado de los RNF](verificacion-v2.md).
+- [Prueba comparativa del mapa simulado](verificar-mapa-comparado.mjs) · [Validación futura con Google Maps real](verificacion-v2.md#trabajo-futuro-con-google-maps).
 - [Métricas comparadas, justificación del UML y prueba de cambio](cierre-tecnico.md).

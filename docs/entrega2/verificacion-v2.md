@@ -37,6 +37,8 @@ El anexo reúne las entradas y resultados esperados. El registro de consola mues
 
 Ejecutadas con Java 17, SQLite temporal y puerto local efímero. Los casos del mapa se ejercitaron con dobles del navegador y del SDK. Para el ajuste de RNF-03 también se usó Chromium con la solicitud de Google interceptada.
 
+V-01a y V-01b también se repitieron con las mismas dos locaciones en las dos etiquetas. La prueba comparativa verifica ambos marcadores, sus fichas y el catálogo ante un fallo del SDK simulado. [Script de comparación](verificar-mapa-comparado.mjs) · [Salida de consola](salida-verificacion.txt)
+
 | Revisión | Maven | Mapa simulado |
 |---|---|---|
 | Antes · v1-antes | 25 pruebas, 0 fallos, 0 errores | V-01a/b comprobados sobre el script original |
@@ -59,7 +61,7 @@ El segundo comando usa Node.js 24 y corresponde a la versión refactorizada. Las
 
 | Requisito | Evidencia y estado |
 |---|---|
-| RNF-01 · Mapa con hasta 100 marcadores | Falta medir el LCP de hasta 2,5 s con Google Maps real, Lighthouse y las condiciones de red del SRS. Se requiere una clave autorizada. |
+| RNF-01 · Mapa con hasta 100 marcadores | Trabajo futuro. Medir el LCP con Google Maps real y una clave autorizada. Objetivo de hasta 2,5 s bajo las condiciones de red del SRS. |
 | RNF-02 · Rendimiento del ZIP | La medición local de R-06 obtuvo P95 de **4,748 s**. El objetivo de P95 de hasta 4 s sigue pendiente. |
 | RNF-03 · Contingencia de Google Maps | El catálogo está disponible desde la primera vista. Se verificó en Chromium que el aviso aparece en menos de 1 s al bloquear la solicitud o dejarla sin respuesta. El mapa aparece si después termina de cargar. |
 | RNF-03 · Disponibilidad mensual | El 99,5 % se registra como supuesto operativo para esta entrega, sin verificación. Comprobarlo en operación requiere un entorno desplegado y sondas cada 60 s durante el periodo mensual. |
@@ -76,4 +78,8 @@ El ajuste funcional posterior para RNF-03 pasó 33 pruebas Java y 9 del mapa sim
 | Solicitud retenida sin respuesta | Aviso de demora a los **801 ms**. El catálogo quedó visible y el panel de mapa siguió oculto. |
 | Respuesta tardía del SDK en escritorio y de los mosaicos en móvil | Aviso de demora a los **800 ms** en ambos casos. El mapa apareció al completar la carga y el aviso se ocultó. |
 
-Los tiempos se midieron desde que la vista solicitó el SDK hasta que cambió el aviso. La respuesta del proveedor se controló en el navegador para reproducir cada escenario. La prueba de LCP de RNF-01 y V-01a con el proveedor real requieren una clave autorizada. [Ajuste de contingencia](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/0aef0bdb9030fda11e93b9b52f7a1e13d8a00822)
+Los tiempos se midieron desde que la vista solicitó el SDK hasta que cambió el aviso. La respuesta del proveedor se controló en el navegador para reproducir cada escenario. [Ajuste de contingencia](https://github.com/ikercontla/proyectoDisenoDeSoftwareArchivoNoventasCancun/commit/0aef0bdb9030fda11e93b9b52f7a1e13d8a00822)
+
+### Trabajo futuro con Google Maps
+
+La Entrega 2 usa el SDK simulado como evidencia de RF-01. En una fase posterior se configurará `GOOGLE_MAPS_API_KEY` con una clave autorizada y se repetirán V-01a y V-01b en el navegador con el proveedor real. RNF-01 se comprobará con Lighthouse, hasta 100 marcadores y las condiciones de red del SRS. El objetivo de LCP es de hasta 2,5 s. [Configuración del mapa](../../README.md#mapa) · [Requisitos no funcionales del SRS](../srs/seccion7_requerimientos_no_funcionales.md)

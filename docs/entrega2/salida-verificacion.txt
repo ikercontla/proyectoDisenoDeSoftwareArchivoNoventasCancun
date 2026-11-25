@@ -46,6 +46,11 @@ Google Maps simulado · Node.js
 V-01a simulada: coordenadas, ficha y enlace correctos.
 V-01b simulada: fallo de carga, panel oculto y catálogo alternativo.
 
+Comparación con las mismas dos locaciones · verificar-mapa-comparado.mjs
+
+v1-antes V-01a: dos marcadores con coordenadas, reseña y enlace correctos
+v1-antes V-01b: SDK simulado falla y queda el catálogo
+
 ============================================================================
 Después - v2.1-refactorizado
 5ad3f7b4344683ab942bd041aa08e0bb39680c06
@@ -98,3 +103,8 @@ Google Maps simulado · Node.js
 ℹ skipped 0
 ℹ todo 0
 ℹ duration_ms 107.6045
+
+Comparación con las mismas dos locaciones · verificar-mapa-comparado.mjs
+
+v2.1-refactorizado V-01a: dos marcadores con coordenadas, reseña y enlace correctos
+v2.1-refactorizado V-01b: SDK simulado falla y queda el catálogo
