@@ -4,7 +4,7 @@ Equipo 03 · Diseño de Software
 
 ## Entregables
 
-- [Informe de la Entrega 2 (PDF, borrador)](Equipo03_Entrega2_ArchivoNoventasCancun_Borrador.pdf). Para cerrar el informe faltan los nombres de portada, la validación de la reflexión y el apartado de uso de IA.
+- [Informe final de la Entrega 2 (PDF)](../../Equipo03_Entrega2_ArchivoNoventasCancun.pdf). El uso de OpenAI Codex se detalla por ajuste y referencia en la sección 10.
 - [Diagrama de clases editable (PlantUML)](../../diagramas/Equipo03_Entrega2_DiagramaClases.puml).
 - Vistas del diagrama en alta resolución. [Dominio y persistencia](uml/dominio.png) · [Controladores HTTP](uml/http.png) · [Acceso a originales](uml/originales.png) · [Proveedor de mapas](uml/mapas.png).
 
